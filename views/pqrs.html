@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQRS - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            background: white;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .pqrs-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .pqrs-card:hover {
+            border-color: #667eea;
+        }
+        
+        .pqrs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .pqrs-number {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .status-abierta {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-en-proceso {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-cerrada {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .pqrs-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .pqrs-info p {
+            margin: 0.3rem 0;
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .type-peticion {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .type-queja {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .type-reclamo {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .type-sugerencia {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">📞 PQRS - TransportePro</div>
+            <div>
+                <a href="/cliente">Mi Cuenta</a> | 
+                <a href="/">Inicio</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('crear')">➕ Crear PQRS</button>
+            <button class="tab" onclick="showTab('mis-pqrs')">📋 Mis PQRS</button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Tab: Crear PQRS -->
+        <div id="tab-crear" class="tab-content active">
+            <h2 style="color: #667eea; margin-bottom: 1.5rem;">Crear Nueva PQRS</h2>
+            
+            <form id="pqrsForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo <span class="required">*</span></label>
+                        <select id="tipo" required>
+                            <option value="">Selecciona un tipo</option>
+                            <option value="PETICION">Petición</option>
+                            <option value="QUEJA">Queja</option>
+                            <option value="RECLAMO">Reclamo</option>
+                            <option value="SUGERENCIA">Sugerencia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Relacionado con</label>
+                        <select id="relacionadoCon">
+                            <option value="">Selecciona</option>
+                            <option value="TIQUETE">Tiquete</option>
+                            <option value="ENVIO">Envío</option>
+                            <option value="SERVICIO">Servicio General</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Número de Referencia</label>
+                        <input type="text" id="numeroReferencia" placeholder="Ej: Número de tiquete o guía">
+                    </div>
+                    
+                    <div class="form-group form-group-full">
+                        <label>Asunto <span class="required">*</span></label>
+                        <input type="text" id="asunto" required placeholder="Breve descripción del tema">
+                    </div>
+                    
+                    <div class="form-group form-group-full">
+                        <label>Descripción Detallada <span class="required">*</span></label>
+                        <textarea id="descripcion" required placeholder="Describe tu caso con el mayor detalle posible..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Teléfono de Contacto</label>
+                        <input type="tel" id="telefono" placeholder="Para contactarte si es necesario">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="email" placeholder="Para recibir notificaciones">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">Enviar PQRS</button>
+            </form>
+        </div>
+
+        <!-- Tab: Mis PQRS -->
+        <div id="tab-mis-pqrs" class="tab-content">
+            <h2 style="color: #667eea; margin-bottom: 1.5rem;">Mis PQRS</h2>
+            
+            <div id="pqrsContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <h3>No tienes PQRS registradas</h3>
+                    <p>Crea tu primera PQRS en la pestaña "Crear PQRS"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+        
+        if (!usuario) {
+            window.location.href = '/login';
+        }
+        
+        // Pre-cargar email y teléfono del usuario
+        document.getElementById('email').value = usuario?.email || '';
+        document.getElementById('telefono').value = usuario?.telefono || '';
+        
+        function showTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar tab seleccionado
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Cargar PQRS si se selecciona esa tab
+            if (tabName === 'mis-pqrs') {
+                loadPQRS();
+            }
+        }
+        
+        document.getElementById('pqrsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const pqrsData = {
+                tipo: document.getElementById('tipo').value,
+                asunto: document.getElementById('asunto').value,
+                descripcion: document.getElementById('descripcion').value,
+                idCliente: usuario.id,
+                relacionadoCon: document.getElementById('relacionadoCon').value || null,
+                numeroReferencia: document.getElementById('numeroReferencia').value || null,
+                contacto: {
+                    telefono: document.getElementById('telefono').value,
+                    email: document.getElementById('email').value
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/pqrs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pqrsData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`PQRS creada exitosamente. Número: ${data.pqrs.numero}`, 'success');
+                    
+                    // Limpiar formulario
+                    document.getElementById('pqrsForm').reset();
+                    document.getElementById('email').value = usuario?.email || '';
+                    document.getElementById('telefono').value = usuario?.telefono || '';
+                    
+                    // Cambiar a la tab de mis PQRS
+                    setTimeout(() => {
+                        document.querySelectorAll('.tab')[1].click();
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Error al crear PQRS', 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Intenta nuevamente.', 'error');
+            }
+        });
+        
+        async function loadPQRS() {
+            try {
+                const response = await fetch(`/api/pqrs?idCliente=${usuario.id}`);
+                const data = await response.json();
+                
+                const container = document.getElementById('pqrsContainer');
+                
+                if (response.ok && data.pqrs && data.pqrs.length > 0) {
+                    container.innerHTML = data.pqrs.map(pqrs => `
+                        <div class="pqrs-card" onclick="verDetalle('${pqrs.id}')">
+                            <div class="pqrs-header">
+                                <div>
+                                    <span class="pqrs-number">PQRS #${pqrs.numero}</span>
+                                    <span class="type-badge type-${pqrs.tipo.toLowerCase()}">${pqrs.tipo}</span>
+                                </div>
+                                <span class="status-badge status-${pqrs.estado.toLowerCase().replace('_', '-')}">
+                                    ${getEstadoLabel(pqrs.estado)}
+                                </span>
+                            </div>
+                            <div class="pqrs-info">
+                                <p><strong>${pqrs.asunto}</strong></p>
+                                <p>${pqrs.descripcion.substring(0, 150)}${pqrs.descripcion.length > 150 ? '...' : ''}</p>
+                                <p style="margin-top: 0.5rem;">
+                                    <small>📅 ${new Date(pqrs.fecha).toLocaleDateString('es-CO', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                    })}</small>
+                                    ${pqrs.relacionadoCon ? ` | <small>📎 ${pqrs.relacionadoCon}: ${pqrs.numeroReferencia}</small>` : ''}
+                                </p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📋</div>
+                            <h3>No tienes PQRS registradas</h3>
+                            <p>Crea tu primera PQRS en la pestaña "Crear PQRS"</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showAlert('Error al cargar PQRS', 'error');
+            }
+        }
+        
+        function getEstadoLabel(estado) {
+            const labels = {
+                'ABIERTA': 'Abierta',
+                'EN_PROCESO': 'En Proceso',
+                'CERRADA': 'Cerrada'
+            };
+            return labels[estado] || estado;
+        }
+        
+        function verDetalle(id) {
+            alert(`Ver detalle de PQRS ${id}\n\nEsta funcionalidad mostraría:\n- Historial completo\n- Respuestas del equipo\n- Estado actual\n- Opciones de seguimiento`);
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            alertContainer.querySelector('.alert').style.display = 'block';
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

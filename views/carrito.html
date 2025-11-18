@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Carrito - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        
+        .carrito-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .items-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .item-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .item-type {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        
+        .item-details {
+            margin-bottom: 1rem;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+        }
+        
+        .item-label {
+            color: #666;
+        }
+        
+        .item-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .item-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
+            text-align: right;
+            margin-top: 1rem;
+        }
+        
+        .btn-remove {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+        
+        .summary-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            padding: 0.5rem 0;
+        }
+        
+        .summary-row.total {
+            border-top: 2px solid #e0e0e0;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .history-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-history {
+            padding: 0.5rem 1rem;
+            background: #ecf0f1;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-history:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @media (max-width: 768px) {
+            .carrito-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-section {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Mi Carrito - TransportePro</div>
+            <div>
+                <a href="/cliente">Mi Cuenta</a> | 
+                <a href="/">Inicio</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">🛒 Mi Carrito de Compras</h1>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="carrito-grid" id="carritoContent">
+            <div class="items-section">
+                <div class="history-controls">
+                    <button class="btn-history" id="btnUndo" onclick="undo()">
+                        ↶ Deshacer
+                    </button>
+                    <button class="btn-history" id="btnRedo" onclick="redo()">
+                        ↷ Rehacer
+                    </button>
+                    <button class="btn-history" onclick="guardarSnapshot()">
+                        💾 Guardar
+                    </button>
+                </div>
+                
+                <h2 class="section-title">Tus Items</h2>
+                <div id="itemsContainer">
+                    <!-- Items se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="summary-section">
+                <h2 class="section-title">Resumen</h2>
+                
+                <div class="summary-row">
+                    <span>Tiquetes:</span>
+                    <span id="cantidadTiquetes">0</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Envíos:</span>
+                    <span id="cantidadEnvios">0</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Subtotal Tiquetes:</span>
+                    <span id="subtotalTiquetes">$0</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Subtotal Envíos:</span>
+                    <span id="subtotalEnvios">$0</span>
+                </div>
+                
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span id="totalGeneral">$0</span>
+                </div>
+                
+                <button class="btn" onclick="procesarCompra()">
+                    Procesar Compra
+                </button>
+                
+                <button class="btn btn-secondary" onclick="vaciarCarrito()">
+                    Vaciar Carrito
+                </button>
+            </div>
+        </div>
+        
+        <div id="emptyCart" class="empty-cart" style="display: none;">
+            <div class="empty-icon">🛒</div>
+            <h2>Tu carrito está vacío</h2>
+            <p>Agrega tiquetes o envíos para comenzar</p>
+            <br>
+            <a href="/tiquetes" class="btn" style="max-width: 300px; margin: 0 auto;">
+                Comprar Tiquetes
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+        let carritoId = localStorage.getItem('carritoId');
+        let carritoData = null;
+        
+        if (!usuario) {
+            window.location.href = '/login';
+        }
+        
+        async function loadCarrito() {
+            try {
+                if (!carritoId) {
+                    // Crear nuevo carrito
+                    const response = await fetch('/api/carrito', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idCliente: usuario.id })
+                    });
+                    
+                    const data = await response.json();
+                    if (response.ok) {
+                        carritoId = data.carrito.id;
+                        localStorage.setItem('carritoId', carritoId);
+                        carritoData = data.carrito;
+                    }
+                } else {
+                    // Cargar carrito existente
+                     // Cargar carrito existente
+                    const response = await fetch(`/api/carrito/${carritoId}`);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        carritoData = data.carrito;
+                    } else if (response.status === 404) {
+                        // carrito viejo: lo reseteamos y creamos uno nuevo
+                        localStorage.removeItem('carritoId');
+                        carritoId = null;
+                        return loadCarrito(); // reintentar para crear carrito nuevo
+                    } else {
+                        showAlert(data.mensaje || 'Error al cargar el carrito', 'error');
+                    }
+                }
+                
+                displayCarrito();
+            } catch (error) {
+                console.error('Error cargando carrito:', error);
+                showAlert('Error al cargar el carrito', 'error');
+            }
+        }
+        
+        function displayCarrito() {
+            const itemsContainer = document.getElementById('itemsContainer');
+            const emptyCart = document.getElementById('emptyCart');
+            const carritoContent = document.getElementById('carritoContent');
+            
+            if (!carritoData || 
+                (carritoData.tiquetesDraft.length === 0 && carritoData.enviosDraft.length === 0)) {
+                emptyCart.style.display = 'block';
+                carritoContent.style.display = 'none';
+                return;
+            }
+            
+            emptyCart.style.display = 'none';
+            carritoContent.style.display = 'grid';
+            
+            let html = '';
+            
+            // Tiquetes
+            carritoData.tiquetesDraft.forEach((tiquete, index) => {
+                html += `
+                    <div class="item-card">
+                        <button class="btn-remove" onclick="removerItem('tiquete', ${index})">×</button>
+                        <div class="item-type">🎫 Tiquete</div>
+                        <div class="item-details">
+                            <div class="item-row">
+                                <span class="item-label">Ruta:</span>
+                                <span class="item-value">${tiquete.origen} → ${tiquete.destino}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Fecha:</span>
+                                <span class="item-value">${new Date(tiquete.fechaViaje).toLocaleDateString('es-CO')}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Pasajero:</span>
+                                <span class="item-value">${tiquete.nombrePasajero}</span>
+                            </div>
+                        </div>
+                        <div class="item-price">$${tiquete.precio.toLocaleString('es-CO')}</div>
+                    </div>
+                `;
+            });
+            
+            // Envíos
+            carritoData.enviosDraft.forEach((envio, index) => {
+                html += `
+                    <div class="item-card">
+                        <button class="btn-remove" onclick="removerItem('envio', ${index})">×</button>
+                        <div class="item-type">📦 Envío</div>
+                        <div class="item-details">
+                            <div class="item-row">
+                                <span class="item-label">Destino:</span>
+                                <span class="item-value">${envio.destinatario.ciudad}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Destinatario:</span>
+                                <span class="item-value">${envio.destinatario.nombre}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Peso:</span>
+                                <span class="item-value">${envio.peso} kg</span>
+                            </div>
+                        </div>
+                        <div class="item-price">$${envio.tarifa.toLocaleString('es-CO')}</div>
+                    </div>
+                `;
+            });
+            
+            itemsContainer.innerHTML = html || '<p>No hay items en el carrito</p>';
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const tiquetes = carritoData.tiquetesDraft.length;
+            const envios = carritoData.enviosDraft.length;
+            
+            const subtotalTiquetes = carritoData.tiquetesDraft.reduce((sum, t) => sum + t.precio, 0);
+            const subtotalEnvios = carritoData.enviosDraft.reduce((sum, e) => sum + e.tarifa, 0);
+            const total = subtotalTiquetes + subtotalEnvios;
+            
+            document.getElementById('cantidadTiquetes').textContent = tiquetes;
+            document.getElementById('cantidadEnvios').textContent = envios;
+            document.getElementById('subtotalTiquetes').textContent = `$${subtotalTiquetes.toLocaleString('es-CO')}`;
+            document.getElementById('subtotalEnvios').textContent = `$${subtotalEnvios.toLocaleString('es-CO')}`;
+            document.getElementById('totalGeneral').textContent = `$${total.toLocaleString('es-CO')}`;
+        }
+        
+        async function guardarSnapshot() {
+            try {
+                const response = await fetch(`/api/carrito/${carritoId}/guardar`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showAlert('Carrito guardado correctamente', 'success');
+                }
+            } catch (error) {
+                showAlert('Error al guardar', 'error');
+            }
+        }
+        
+        async function undo() {
+            try {
+                const response = await fetch(`/api/carrito/${carritoId}/undo`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    carritoData = data.carrito;
+                    displayCarrito();
+                    showAlert('Cambio deshecho', 'success');
+                }
+            } catch (error) {
+                showAlert('No hay más cambios para deshacer', 'error');
+            }
+        }
+        
+        async function redo() {
+            try {
+                const response = await fetch(`/api/carrito/${carritoId}/redo`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    carritoData = data.carrito;
+                    displayCarrito();
+                    showAlert('Cambio rehecho', 'success');
+                }
+            } catch (error) {
+                showAlert('No hay más cambios para rehacer', 'error');
+            }
+        }
+        
+        function removerItem(tipo, index) {
+            if (tipo === 'tiquete') {
+                carritoData.tiquetesDraft.splice(index, 1);
+            } else {
+                carritoData.enviosDraft.splice(index, 1);
+            }
+            displayCarrito();
+        }
+        
+        async function vaciarCarrito() {
+            if (confirm('¿Estás seguro de vaciar el carrito?')) {
+                try {
+                    const response = await fetch(`/api/carrito/${carritoId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        localStorage.removeItem('carritoId');
+                        carritoId = null;
+                        await loadCarrito();
+                        showAlert('Carrito vaciado', 'success');
+                    }
+                } catch (error) {
+                    showAlert('Error al vaciar carrito', 'error');
+                }
+            }
+        }
+        
+        async function procesarCompra() {
+            if (!carritoData || 
+                (carritoData.tiquetesDraft.length === 0 && carritoData.enviosDraft.length === 0)) {
+                showAlert('El carrito está vacío', 'error');
+                return;
+            }
+            
+            if (confirm('¿Proceder con la compra?')) {
+                showAlert('Procesando compra... (Funcionalidad en desarrollo)', 'success');
+                // Aquí se implementaría la lógica de compra usando ProcesoCompraController
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+        
+        // Cargar carrito al iniciar
+        loadCarrito();
+    </script>
+</body>
+</html>

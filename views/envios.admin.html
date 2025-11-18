@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Envíos - TransportePro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .logo { font-size: 1.5rem; font-weight: bold; }
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        h2 { color: #333; margin-bottom: 1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 0.5rem; text-align: left; }
+        .btn { padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #5568d3; }
+        .btn-delete { background: #e74c3c; }
+        .btn-delete:hover { background: #c0392b; }
+        .btn-edit { background: #f39c12; }
+        .btn-edit:hover { background: #e67e22; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px; }
+        .close-modal { float: right; cursor: pointer; font-size: 1.5rem; }
+        form { display: flex; flex-direction: column; gap: 1rem; }
+        input, select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">📦 Gestión de Envíos - TransportePro</div>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="container">
+        <h2>Envíos Registrados</h2>
+        <button class="btn" onclick="openModal('crear')">Nuevo Envío</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Número de Guía</th>
+                    <th>Cliente</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Peso (kg)</th>
+                    <th>Valor Declarado</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="enviosTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <form id="modalForm" onsubmit="saveEnvio(event)">
+                <!-- Campos dinámicos -->
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let enviosData = [
+            {id:1, numero_guia:'GUIA001', cliente:'Carlos Gómez', origen:'Bogotá', destino:'Medellín', peso:4.5, valor_declarado:200000, estado:'en-bodega'},
+            {id:2, numero_guia:'GUIA002', cliente:'Ana Torres', origen:'Bogotá', destino:'Cali', peso:2.0, valor_declarado:80000, estado:'en-ruta'},
+            {id:3, numero_guia:'GUIA003', cliente:'María López', origen:'Medellín', destino:'Bogotá', peso:10.0, valor_declarado:350000, estado:'registrado'}
+        ];
+
+        let editingId = null;
+
+        function loadEnviosTable() {
+            const tbody = document.getElementById('enviosTable');
+            tbody.innerHTML = enviosData.map(e => `
+                <tr>
+                    <td>${e.id}</td>
+                    <td>${e.numero_guia}</td>
+                    <td>${e.cliente}</td>
+                    <td>${e.origen}</td>
+                    <td>${e.destino}</td>
+                    <td>${e.peso}</td>
+                    <td>${e.valor_declarado}</td>
+                    <td>${e.estado}</td>
+                    <td>
+                        <button class="btn-edit" onclick="openModal('editar', ${e.id})">Editar</button>
+                        <button class="btn-delete" onclick="deleteEnvio(${e.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(tipo, id=null) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('modalForm');
+            modal.style.display = 'flex';
+            form.innerHTML = '';
+            editingId = null;
+
+            if(tipo === 'crear') {
+                title.textContent = 'Nuevo Envío';
+                form.innerHTML = `
+                    <input type="text" name="numero_guia" placeholder="Número de Guía" required>
+                    <input type="text" name="cliente" placeholder="Nombre Cliente" required>
+                    <input type="text" name="origen" placeholder="Origen" required>
+                    <input type="text" name="destino" placeholder="Destino" required>
+                    <input type="number" step="0.1" name="peso" placeholder="Peso (kg)" required>
+                    <input type="number" name="valor_declarado" placeholder="Valor Declarado" required>
+                    <select name="estado" required>
+                        <option value="registrado">Registrado</option>
+                        <option value="en-bodega">En Bodega</option>
+                        <option value="en-ruta">En Ruta</option>
+                        <option value="entregado">Entregado</option>
+                        <option value="devuelto">Devuelto</option>
+                        <option value="fallido">Fallido</option>
+                    </select>
+                    <button class="btn" type="submit">Guardar</button>
+                `;
+            } else if(tipo === 'editar') {
+                const envio = enviosData.find(e => e.id === id);
+                if(!envio) return;
+                editingId = id;
+                title.textContent = 'Editar Envío';
+                form.innerHTML = `
+                    <input type="text" name="numero_guia" value="${envio.numero_guia}" required>
+                    <input type="text" name="cliente" value="${envio.cliente}" required>
+                    <input type="text" name="origen" value="${envio.origen}" required>
+                    <input type="text" name="destino" value="${envio.destino}" required>
+                    <input type="number" step="0.1" name="peso" value="${envio.peso}" required>
+                    <input type="number" name="valor_declarado" value="${envio.valor_declarado}" required>
+                    <select name="estado" required>
+                        <option value="registrado" ${envio.estado==='registrado'?'selected':''}>Registrado</option>
+                        <option value="en-bodega" ${envio.estado==='en-bodega'?'selected':''}>En Bodega</option>
+                        <option value="en-ruta" ${envio.estado==='en-ruta'?'selected':''}>En Ruta</option>
+                        <option value="entregado" ${envio.estado==='entregado'?'selected':''}>Entregado</option>
+                        <option value="devuelto" ${envio.estado==='devuelto'?'selected':''}>Devuelto</option>
+                        <option value="fallido" ${envio.estado==='fallido'?'selected':''}>Fallido</option>
+                    </select>
+                    <button class="btn" type="submit">Actualizar</button>
+                `;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function saveEnvio(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            if(editingId) {
+                // Editar
+                const index = enviosData.findIndex(e => e.id === editingId);
+                enviosData[index] = {...data, id: editingId, peso: parseFloat(data.peso), valor_declarado: parseFloat(data.valor_declarado)};
+            } else {
+                // Crear
+                const newId = enviosData.length ? Math.max(...enviosData.map(e=>e.id))+1 : 1;
+                enviosData.push({...data, id: newId, peso: parseFloat(data.peso), valor_declarado: parseFloat(data.valor_declarado)});
+            }
+
+            loadEnviosTable();
+            closeModal();
+        }
+
+        function deleteEnvio(id) {
+            if(confirm('¿Desea eliminar este envío?')) {
+                enviosData = enviosData.filter(e => e.id !== id);
+                loadEnviosTable();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('usuario');
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        loadEnviosTable();
+    </script>
+</body>
+</html>

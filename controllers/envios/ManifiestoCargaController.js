@@ -1,47 +1,77 @@
-// controllers/envios/ManifiestoCargaController.js
-import {
-  crearManifiesto,
-  obtenerManifiesto,
-  asociarEnvioAManifiesto,
-  desasociarEnvioDeManifiesto
-} from './EnviosMemoryStore.js';
+import db from '../../config/db.js';
 
 export default class ManifiestoCargaController {
-  static async crear(req, res) {
+  static crear(req, res) {
     const datos = req.body || {};
-    const mani = crearManifiesto(datos);
-    return res.status(201).json({ ok: true, manifiesto: mani });
+    const fecha = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    db.run(
+      'INSERT INTO manifiestos (id_conductor, id_vehiculo, fecha) VALUES (?, ?, ?)',
+      [datos.id_conductor || null, datos.id_vehiculo || null, fecha],
+      function (err) {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+        const id = this.lastID;
+        db.get('SELECT * FROM manifiestos WHERE id = ?', [id], (err, manifiesto) => {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+          return res.status(201).json({ ok: true, manifiesto });
+        });
+      }
+    );
   }
 
-  static async obtener(req, res) {
+  static obtener(req, res) {
     const id = Number(req.params.id);
-    const mani = obtenerManifiesto(id);
-    if (!mani) {
-      return res.status(404).json({ ok: false, mensaje: 'Manifiesto no encontrado' });
-    }
-    return res.status(200).json({ ok: true, manifiesto: mani });
+    db.get('SELECT * FROM manifiestos WHERE id = ?', [id], (err, manifiesto) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!manifiesto) return res.status(404).json({ ok: false, mensaje: 'Manifiesto no encontrado' });
+      return res.status(200).json({ ok: true, manifiesto });
+    });
   }
 
-  static async asociarEnvio(req, res) {
+  static asociarEnvio(req, res) {
     const id = Number(req.params.id);
     const { idEnvio } = req.body || {};
 
-    try {
-      const mani = asociarEnvioAManifiesto(id, Number(idEnvio));
-      return res.status(200).json({ ok: true, manifiesto: mani });
-    } catch (e) {
-      return res.status(400).json({ ok: false, mensaje: e.message });
-    }
+    db.get('SELECT * FROM manifiestos WHERE id = ?', [id], (err, manifiesto) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!manifiesto) return res.status(404).json({ ok: false, mensaje: 'Manifiesto no encontrado' });
+
+      db.get('SELECT * FROM envios WHERE id = ?', [Number(idEnvio)], (err, envio) => {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+        if (!envio) return res.status(404).json({ ok: false, mensaje: 'Envio no encontrado' });
+
+        db.run(
+          'INSERT INTO manifiestos_envios (id_manifiesto, id_envio) VALUES (?, ?)',
+          [id, Number(idEnvio)],
+          function (err) {
+            if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+            db.all('SELECT * FROM manifiestos_envios WHERE id_manifiesto = ?', [id], (err, enviosAsociados) => {
+              if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+              return res.status(200).json({ ok: true, manifiesto, enviosAsociados });
+            });
+          }
+        );
+      });
+    });
   }
 
-  static async desasociarEnvio(req, res) {
+  static desasociarEnvio(req, res) {
     const id = Number(req.params.id);
     const { idEnvio } = req.body || {};
 
-    const mani = desasociarEnvioDeManifiesto(id, Number(idEnvio));
-    if (!mani) {
-      return res.status(404).json({ ok: false, mensaje: 'Manifiesto no encontrado' });
-    }
-    return res.status(200).json({ ok: true, manifiesto: mani });
+    db.run(
+      'DELETE FROM manifiestos_envios WHERE id_manifiesto = ? AND id_envio = ?',
+      [id, Number(idEnvio)],
+      function (err) {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+        db.all('SELECT * FROM manifiestos_envios WHERE id_manifiesto = ?', [id], (err, enviosAsociados) => {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+          return res.status(200).json({ ok: true, enviosAsociados });
+        });
+      }
+    );
   }
 }

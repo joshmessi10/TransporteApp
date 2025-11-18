@@ -1,44 +1,48 @@
-// controllers/pasajeros/EquipajeController.js
-import {
-  registrarEquipaje,
-  listarEquipajesPorTiquete,
-  eliminarEquipaje
-} from './PasajerosMemoryStore.js';
+import db from '../../config/db.js';
 
 export default class EquipajeController {
-  static async registrarEquipaje(req, res) {
+  static registrarEquipaje(req, res) {
     const idTiquete = Number(req.params.idTiquete);
     const { pesoKg, tipo, descripcion } = req.body || {};
 
     if (!idTiquete || pesoKg == null) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'idTiquete y pesoKg son obligatorios'
-      });
+      return res.status(400).json({ ok: false, mensaje: 'idTiquete y pesoKg son obligatorios' });
     }
 
-    const equipaje = registrarEquipaje({
-      idTiquete,
-      pesoKg,
-      tipo: tipo || 'GENERAL',
-      descripcion: descripcion || ''
+    db.get('SELECT * FROM tiquetes WHERE id = ?', [idTiquete], (err, tiquete) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!tiquete) return res.status(400).json({ ok: false, mensaje: 'Tiquete no existe' });
+
+      db.run(
+        'INSERT INTO equipaje (id_tiquete, peso, descripcion) VALUES (?, ?, ?)',
+        [idTiquete, Number(pesoKg), descripcion || null],
+        function (err) {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+          const id = this.lastID;
+          db.get('SELECT * FROM equipaje WHERE id = ?', [id], (err, equipaje) => {
+            if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+            return res.status(201).json({ ok: true, equipaje });
+          });
+        }
+      );
     });
-
-    return res.status(201).json({ ok: true, equipaje });
   }
 
-  static async listarEquipajes(req, res) {
+  static listarEquipajes(req, res) {
     const idTiquete = Number(req.params.idTiquete);
-    const lista = listarEquipajesPorTiquete(idTiquete);
-    return res.status(200).json({ ok: true, equipajes: lista });
+    db.all('SELECT * FROM equipaje WHERE id_tiquete = ?', [idTiquete], (err, equipajes) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      return res.status(200).json({ ok: true, equipajes });
+    });
   }
 
-  static async eliminarEquipaje(req, res) {
+  static eliminarEquipaje(req, res) {
     const idEquipaje = Number(req.params.idEquipaje);
-    const ok = eliminarEquipaje(idEquipaje);
-    if (!ok) {
-      return res.status(404).json({ ok: false, mensaje: 'Equipaje no encontrado' });
-    }
-    return res.status(200).json({ ok: true });
+    db.run('DELETE FROM equipaje WHERE id = ?', [idEquipaje], function (err) {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (this.changes === 0) return res.status(404).json({ ok: false, mensaje: 'Equipaje no encontrado' });
+      return res.status(200).json({ ok: true });
+    });
   }
 }

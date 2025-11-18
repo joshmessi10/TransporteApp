@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tiquetes y Equipaje - TransportePro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .logo { font-size: 1.5rem; font-weight: bold; }
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        h2 { color: #333; margin-bottom: 1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 0.5rem; text-align: left; }
+        .btn { padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #5568d3; }
+        .btn-delete { background: #e74c3c; }
+        .btn-delete:hover { background: #c0392b; }
+        .btn-edit { background: #f39c12; }
+        .btn-edit:hover { background: #e67e22; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 600px; }
+        .close-modal { float: right; cursor: pointer; font-size: 1.5rem; }
+        form { display: flex; flex-direction: column; gap: 1rem; }
+        input, select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎫 Gestión de Tiquetes y Equipaje - TransportePro</div>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="container">
+        <h2>Tiquetes</h2>
+        <button class="btn" onclick="openModal('crearTiquete')">Nuevo Tiquete</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Reserva</th>
+                    <th>Cliente</th>
+                    <th>Asiento</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tiquetesTable"></tbody>
+        </table>
+
+        <h2>Equipaje</h2>
+        <button class="btn" onclick="openModal('crearEquipaje')">Nuevo Equipaje</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tiquete</th>
+                    <th>Peso (kg)</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="equipajeTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <form id="modalForm" onsubmit="saveItem(event)"></form>
+        </div>
+    </div>
+
+    <script>
+        // Datos simulados de la DB
+        let tiquetesData = [
+            {id:1, reserva:1, cliente:1, asiento:'12A', precio:120000, estado:'emitido'},
+            {id:2, reserva:2, cliente:2, asiento:'12B', precio:120000, estado:'emitido'},
+            {id:3, reserva:3, cliente:4, asiento:'5C', precio:35000, estado:'emitido'}
+        ];
+
+        let equipajeData = [
+            {id:1, tiquete:1, peso:18.5, descripcion:'Maleta grande'},
+            {id:2, tiquete:2, peso:12.0, descripcion:'Mochila'},
+            {id:3, tiquete:3, peso:8.3, descripcion:'Bolso de mano'}
+        ];
+
+        let editingItem = null;
+        let editingType = null;
+
+        function loadTiquetesTable() {
+            const tbody = document.getElementById('tiquetesTable');
+            tbody.innerHTML = tiquetesData.map(t => `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${t.reserva}</td>
+                    <td>${t.cliente}</td>
+                    <td>${t.asiento}</td>
+                    <td>${t.precio}</td>
+                    <td>${t.estado}</td>
+                    <td>
+                        <button class="btn-edit" onclick="openModal('editarTiquete', ${t.id})">Editar</button>
+                        <button class="btn-delete" onclick="deleteItem('tiquete', ${t.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadEquipajeTable() {
+            const tbody = document.getElementById('equipajeTable');
+            tbody.innerHTML = equipajeData.map(e => `
+                <tr>
+                    <td>${e.id}</td>
+                    <td>${e.tiquete}</td>
+                    <td>${e.peso}</td>
+                    <td>${e.descripcion}</td>
+                    <td>
+                        <button class="btn-edit" onclick="openModal('editarEquipaje', ${e.id})">Editar</button>
+                        <button class="btn-delete" onclick="deleteItem('equipaje', ${e.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(tipo, id=null) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('modalForm');
+            modal.style.display = 'flex';
+            form.innerHTML = '';
+            editingItem = null;
+            editingType = tipo;
+
+            if(tipo==='crearTiquete' || tipo==='editarTiquete') {
+                title.textContent = tipo==='crearTiquete'?'Nuevo Tiquete':'Editar Tiquete';
+                let t = {reserva:'', cliente:'', asiento:'', precio:'', estado:'emitido'};
+                if(tipo==='editarTiquete') t = tiquetesData.find(x => x.id===id);
+                editingItem = t;
+
+                form.innerHTML = `
+                    <input type="number" name="reserva" placeholder="ID Reserva" value="${t.reserva}" required>
+                    <input type="number" name="cliente" placeholder="ID Cliente" value="${t.cliente}" required>
+                    <input type="text" name="asiento" placeholder="Asiento" value="${t.asiento}" required>
+                    <input type="number" name="precio" placeholder="Precio" value="${t.precio}" required>
+                    <select name="estado" required>
+                        <option value="emitido" ${t.estado==='emitido'?'selected':''}>Emitido</option>
+                        <option value="usado" ${t.estado==='usado'?'selected':''}>Usado</option>
+                        <option value="anulado" ${t.estado==='anulado'?'selected':''}>Anulado</option>
+                    </select>
+                    <button class="btn" type="submit">${tipo==='crearTiquete'?'Guardar':'Actualizar'}</button>
+                `;
+            }
+
+            if(tipo==='crearEquipaje' || tipo==='editarEquipaje') {
+                title.textContent = tipo==='crearEquipaje'?'Nuevo Equipaje':'Editar Equipaje';
+                let e = {tiquete:'', peso:'', descripcion:''};
+                if(tipo==='editarEquipaje') e = equipajeData.find(x => x.id===id);
+                editingItem = e;
+
+                form.innerHTML = `
+                    <input type="number" name="tiquete" placeholder="ID Tiquete" value="${e.tiquete}" required>
+                    <input type="number" step="0.1" name="peso" placeholder="Peso (kg)" value="${e.peso}" required>
+                    <input type="text" name="descripcion" placeholder="Descripción" value="${e.descripcion}" required>
+                    <button class="btn" type="submit">${tipo==='crearEquipaje'?'Guardar':'Actualizar'}</button>
+                `;
+            }
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        function saveItem(event) {
+            event.preventDefault();
+            const data = Object.fromEntries(new FormData(event.target).entries());
+
+            if(editingType.includes('Tiquete')) {
+                data.precio = parseFloat(data.precio);
+                if(editingType==='crearTiquete') {
+                    const newId = tiquetesData.length ? Math.max(...tiquetesData.map(t=>t.id))+1 : 1;
+                    tiquetesData.push({...data, id:newId});
+                } else {
+                    const index = tiquetesData.findIndex(t => t.id===editingItem.id);
+                    tiquetesData[index] = {...data, id:editingItem.id};
+                }
+                loadTiquetesTable();
+            }
+
+            if(editingType.includes('Equipaje')) {
+                data.peso = parseFloat(data.peso);
+                if(editingType==='crearEquipaje') {
+                    const newId = equipajeData.length ? Math.max(...equipajeData.map(e=>e.id))+1 : 1;
+                    equipajeData.push({...data, id:newId});
+                } else {
+                    const index = equipajeData.findIndex(e => e.id===editingItem.id);
+                    equipajeData[index] = {...data, id:editingItem.id};
+                }
+                loadEquipajeTable();
+            }
+
+            closeModal();
+        }
+
+        function deleteItem(tipo, id) {
+            if(confirm('¿Desea eliminar este registro?')) {
+                if(tipo==='tiquete') tiquetesData = tiquetesData.filter(t => t.id!==id);
+                if(tipo==='equipaje') equipajeData = equipajeData.filter(e => e.id!==id);
+                loadTiquetesTable();
+                loadEquipajeTable();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('usuario');
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        loadTiquetesTable();
+        loadEquipajeTable();
+    </script>
+</body>
+</html>

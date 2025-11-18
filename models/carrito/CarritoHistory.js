@@ -2,13 +2,14 @@
 
 export default class CarritoHistory {
   constructor(carrito) {
-    this.carrito = carrito;
-    this.mementos = [];
-    this.currentIndex = -1;
+    this.carrito = carrito;    // Originator
+    this.mementos = [];        // pila de snapshots
+    this.currentIndex = -1;    // puntero al snapshot actual
   }
 
+  // Guarda un nuevo snapshot y corta el “futuro” (estilo editor de texto)
   snapshot() {
-    // Borrar “futuro” si estamos en medio del historial
+    // Si hicimos undo y luego cambiamos algo, borramos todos los “redos”
     this.mementos = this.mementos.slice(0, this.currentIndex + 1);
 
     const memento = this.carrito.crearMemento();
@@ -16,22 +17,26 @@ export default class CarritoHistory {
     this.currentIndex = this.mementos.length - 1;
   }
 
-  undo() {
+  deshacer() {
     if (this.currentIndex <= 0) {
-      return;
+      // Nada más que deshacer
+      return false;
     }
     this.currentIndex -= 1;
     const memento = this.mementos[this.currentIndex];
     this.carrito.restaurarDesdeMemento(memento);
+    return true;
   }
 
-  redo() {
-    if (this.currentIndex >= this.mementos.length - 1) {
-      return;
+  rehacer() {
+    if (this.currentIndex < 0 || this.currentIndex >= this.mementos.length - 1) {
+      // Nada más que rehacer
+      return false;
     }
     this.currentIndex += 1;
     const memento = this.mementos[this.currentIndex];
     this.carrito.restaurarDesdeMemento(memento);
+    return true;
   }
 
   listarSnapshots() {

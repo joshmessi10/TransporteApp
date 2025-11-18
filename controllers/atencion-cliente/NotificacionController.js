@@ -1,32 +1,37 @@
-// controllers/atencion-cliente/NotificacionController.js
-import {
-  listarNotificacionesUsuario,
-  obtenerNotificacion,
-  marcarNotificacionLeida
-} from './AtencionClienteMemoryStore.js';
+import db from '../../config/db.js';
 
 export default class NotificacionController {
-  static async listarPorUsuario(req, res) {
+  static listarPorUsuario(req, res) {
     const idUsuario = Number(req.params.idUsuario);
-    const notifs = listarNotificacionesUsuario(idUsuario);
-    return res.status(200).json({ ok: true, notificaciones: notifs });
+    db.all(
+      'SELECT * FROM notificaciones WHERE id_usuario = ? ORDER BY fecha DESC',
+      [idUsuario],
+      (err, notificaciones) => {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+        return res.status(200).json({ ok: true, notificaciones });
+      }
+    );
   }
 
-  static async obtener(req, res) {
+  static obtener(req, res) {
     const id = Number(req.params.id);
-    const notif = obtenerNotificacion(id);
-    if (!notif) {
-      return res.status(404).json({ ok: false, mensaje: 'Notificación no encontrada' });
-    }
-    return res.status(200).json({ ok: true, notificacion: notif });
+    db.get('SELECT * FROM notificaciones WHERE id = ?', [id], (err, notificacion) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!notificacion) return res.status(404).json({ ok: false, mensaje: 'Notificación no encontrada' });
+      return res.status(200).json({ ok: true, notificacion });
+    });
   }
 
-  static async marcarLeida(req, res) {
+  static marcarLeida(req, res) {
     const id = Number(req.params.id);
-    const notif = marcarNotificacionLeida(id);
-    if (!notif) {
-      return res.status(404).json({ ok: false, mensaje: 'Notificación no encontrada' });
-    }
-    return res.status(200).json({ ok: true, notificacion: notif });
+    db.run('UPDATE notificaciones SET leida = true WHERE id = ?', [id], function (err) {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (this.changes === 0) return res.status(404).json({ ok: false, mensaje: 'Notificación no encontrada' });
+
+      db.get('SELECT * FROM notificaciones WHERE id = ?', [id], (err, notificacion) => {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+        return res.status(200).json({ ok: true, notificacion });
+      });
+    });
   }
 }

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar Tiquetes - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .search-section h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, select {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .results-section h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .viaje-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        
+        .viaje-card:hover {
+            border-color: #667eea;
+        }
+        
+        .route-info h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .route-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .schedule {
+            text-align: center;
+        }
+        
+        .time {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .price {
+            text-align: center;
+        }
+        
+        .amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .currency {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .btn-select {
+            padding: 0.8rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-select:hover {
+            background: #5568d3;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert-info {
+            background: #e7f3ff;
+            color: #0066cc;
+            border: 1px solid #b3d9ff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🚌 TransportePro</div>
+            <div>
+                <a href="/">Inicio</a> | 
+                <a href="/carrito">🛒 Carrito</a> |
+                <a href="/login">Ingresar</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="search-section">
+            <h2>🎫 Buscar Tiquetes</h2>
+            
+            <form id="searchForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="origen">Origen</label>
+                        <select id="origen" required>
+                            <option value="">Selecciona origen</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="medellin">Medellín</option>
+                            <option value="cali">Cali</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="cartagena">Cartagena</option>
+                            <option value="villavicencio">Villavicencio</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="destino">Destino</label>
+                        <select id="destino" required>
+                            <option value="">Selecciona destino</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="medellin">Medellín</option>
+                            <option value="cali">Cali</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="cartagena">Cartagena</option>
+                            <option value="villavicencio">Villavicencio</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fecha">Fecha de Viaje</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pasajeros">Pasajeros</label>
+                        <input type="number" id="pasajeros" min="1" max="10" value="1" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">🔍 Buscar Viajes</button>
+            </form>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h3>Viajes Disponibles</h3>
+            <div id="resultsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const alertDiv = document.getElementById('alert');
+        
+        // Establecer fecha mínima como hoy
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+        
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const origen = document.getElementById('origen').value;
+            const destino = document.getElementById('destino').value;
+            const fecha = document.getElementById('fecha').value;
+            const pasajeros = document.getElementById('pasajeros').value;
+            
+            if (origen === destino) {
+                showAlert('El origen y destino no pueden ser iguales', 'info');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/viajes?origen=${origen}&destino=${destino}&fecha=${fecha}`);
+                const data = await response.json();
+                
+                if (response.ok && data.viajes) {
+                    displayResults(data.viajes, pasajeros);
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🚌</div>
+                            <h3>No hay viajes disponibles</h3>
+                            <p>Intenta con otra fecha o ruta</p>
+                        </div>
+                    `;
+                    resultsSection.style.display = 'block';
+                }
+            } catch (error) {
+                showAlert('Error al buscar viajes', 'info');
+            }
+        });
+        
+        function displayResults(viajes, pasajeros) {
+            if (viajes.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🚌</div>
+                        <h3>No hay viajes disponibles</h3>
+                        <p>Intenta con otra fecha o ruta</p>
+                    </div>
+                `;
+            } else {
+                resultsContainer.innerHTML = viajes.map(viaje => `
+                    <div class="viaje-card">
+                        <div class="route-info">
+                            <h4>${viaje.ruta.origen} → ${viaje.ruta.destino}</h4>
+                            <div class="route-details">
+                                <p>🚌 ${viaje.vehiculo.placa} - ${viaje.vehiculo.tipo}</p>
+                                <p>👨‍✈️ ${viaje.conductor.nombre}</p>
+                                <p>💺 ${viaje.asientosDisponibles} asientos disponibles</p>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule">
+                            <div class="time">${new Date(viaje.fechaSalida).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div class="date">${new Date(viaje.fechaSalida).toLocaleDateString('es-CO')}</div>
+                        </div>
+                        
+                        <div class="price">
+                            <div class="amount">$${(viaje.precio * pasajeros).toLocaleString()}</div>
+                            <div class="currency">COP</div>
+                        </div>
+                        
+                        <button class="btn-select" onclick="selectViaje('${viaje.id}', ${pasajeros})">
+                            Seleccionar
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            resultsSection.style.display = 'block';
+        }
+        
+       window.selectViaje = async function (idViaje, pasajeros) {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!usuario) {
+                if (confirm('Debes iniciar sesión para comprar tiquetes. ¿Deseas ir al login?')) {
+                    window.location.href = '/login';
+                }
+                return;
+            }
+
+            if (!confirm(`¿Deseas agregar ${pasajeros} tiquete(s) al carrito?`)) {
+                return;
+            }
+
+            try {
+                // 1. Asegurar carrito
+                let carritoId = localStorage.getItem('carritoId');
+                if (!carritoId) {
+                    const respCarrito = await fetch('/api/carrito', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idCliente: usuario.id })
+                    });
+
+                    const dataCarrito = await respCarrito.json();
+                    if (!respCarrito.ok) {
+                        alert(dataCarrito.mensaje || 'No se pudo crear el carrito');
+                        return;
+                    }
+                    carritoId = dataCarrito.carrito.id;
+                    localStorage.setItem('carritoId', carritoId);
+                }
+
+                // 2. Agregar tiquete al carrito
+                const respAgregar = await fetch(`/api/carrito/${carritoId}/agregar-tiquete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        viajeId: Number(idViaje),
+                        cantidad: Number(pasajeros) || 1
+                    })
+                });
+
+                const dataAgregar = await respAgregar.json().catch(() => ({}));
+                if (!respAgregar.ok) {
+                    alert(dataAgregar.mensaje || 'No se pudo agregar el tiquete al carrito');
+                    return;
+                }
+
+                // 3. Ir al carrito
+                window.location.href = '/carrito';
+            } catch (e) {
+                console.error(e);
+                alert('Error al agregar al carrito');
+            }
+        };
+
+    </script>
+</body>
+</html>

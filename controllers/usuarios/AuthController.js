@@ -1,89 +1,60 @@
-// controllers/usuarios/AuthController.js
-import {
-  obtenerPorEmail,
-  obtenerPorId,
-  actualizarPassword
-} from './UsuarioMemoryStore.js';
+import db from '../../config/db.js';
 
-// resetToken -> idUsuario
 const resetTokens = new Map();
 
 export default class AuthController {
-  static async login(req, res) {
+  static login(req, res) {
     const { email, password } = req.body || {};
-
     if (!email || !password) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'Email y password son obligatorios'
-      });
+      return res.status(400).json({ ok: false, mensaje: 'Email y password son obligatorios' });
     }
 
-    const record = obtenerPorEmail(email);
-    if (!record) {
-      return res.status(401).json({ ok: false, mensaje: 'Credenciales inválidas' });
-    }
+    db.get(
+      'SELECT id, nombre, email, password, rol, estado FROM users WHERE email = ? LIMIT 1',
+      [email],
+      (err, user) => {
+        if (err) return res.status(500).json({ ok: false, mensaje: 'Error servidor' });
+        if (!user) return res.status(401).json({ ok: false, mensaje: 'Credenciales inválidas' });
+        if (user.password !== password) return res.status(401).json({ ok: false, mensaje: 'Credenciales inválidas' });
+        if (user.estado === 'bloqueado') return res.status(403).json({ ok: false, mensaje: 'Usuario bloqueado' });
 
-    if (record.bloqueado || record.model.activo === false) {
-      return res.status(403).json({ ok: false, mensaje: 'Usuario bloqueado/inactivo' });
-    }
+        const usuarioPublico = {
+          idUsuario: user.id,
+          nombre: user.nombre,
+          email: user.email,
+          rol: user.rol
+        };
 
-    if (record.password !== password) {
-      return res.status(401).json({ ok: false, mensaje: 'Credenciales inválidas' });
-    }
-
-    const usuarioPublico = {
-      idUsuario: record.idUsuario,
-      email: record.email,
-      rol: record.rol,
-      tipo: record.tipo
-    };
-
-    return res.status(200).json({
-      ok: true,
-      usuario: usuarioPublico,
-      token: 'FAKE-TOKEN-' + record.idUsuario
-    });
+        return res.status(200).json({ ok: true, usuario: usuarioPublico, token: 'FAKE-TOKEN-' + user.id });
+      }
+    );
   }
 
-  static async logout(req, res) {
-    // En un sistema real invalidaríamos el token
+  static logout(req, res) {
     return res.status(200).json({ ok: true, mensaje: 'Sesión cerrada' });
   }
 
-  static async solicitarResetPassword(req, res) {
+  static solicitarResetPassword(req, res) {
     const { email } = req.body || {};
-    if (!email) {
-      return res.status(400).json({ ok: false, mensaje: 'Email es obligatorio' });
-    }
+    if (!email) return res.status(400).json({ ok: false, mensaje: 'Email es obligatorio' });
 
-    const record = obtenerPorEmail(email);
-    if (!record) {
-      // Para no filtrar existencia de usuario, devolvemos ok igual
-      return res.status(200).json({
-        ok: true,
-        mensaje: 'Si el email existe, se enviará un enlace de recuperación'
-      });
-    }
+    db.get('SELECT id FROM users WHERE email = ? LIMIT 1', [email], (err, user) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: 'Error servidor' });
 
-    const token = 'RESET-' + record.idUsuario + '-' + Date.now();
-    resetTokens.set(token, record.idUsuario);
+      if (!user) {
+        return res.status(200).json({ ok: true, mensaje: 'Si el email existe, se enviará enlace' });
+      }
 
-    // En un sistema real aquí enviaríamos email con el token
-    return res.status(200).json({
-      ok: true,
-      mensaje: 'Token de recuperación generado',
-      token // para test lo devolvemos
+      const token = 'RESET-' + user.id + '-' + Date.now();
+      resetTokens.set(token, user.id);
+      return res.status(200).json({ ok: true, mensaje: 'Token generado', token });
     });
   }
 
-  static async resetPassword(req, res) {
+  static resetPassword(req, res) {
     const { token, nuevaPassword } = req.body || {};
     if (!token || !nuevaPassword) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'Token y nuevaPassword son obligatorios'
-      });
+      return res.status(400).json({ ok: false, mensaje: 'Token y nuevaPassword son obligatorios' });
     }
 
     const idUsuario = resetTokens.get(token);
@@ -91,36 +62,29 @@ export default class AuthController {
       return res.status(400).json({ ok: false, mensaje: 'Token inválido o expirado' });
     }
 
-    const record = actualizarPassword(idUsuario, nuevaPassword);
-    resetTokens.delete(token);
-
-    if (!record) {
-      return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' });
-    }
-
-    return res.status(200).json({ ok: true, mensaje: 'Contraseña actualizada' });
+    db.run('UPDATE users SET password = ? WHERE id = ?', [nuevaPassword, idUsuario], function (err) {
+      resetTokens.delete(token);
+      if (err) return res.status(500).json({ ok: false, mensaje: 'Error servidor' });
+      if (this.changes === 0) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' });
+      return res.status(200).json({ ok: true, mensaje: 'Contraseña actualizada' });
+    });
   }
 
-  static async cambiarPassword(req, res) {
+  static cambiarPassword(req, res) {
     const { idUsuario, oldPassword, nuevaPassword } = req.body || {};
     if (!idUsuario || !oldPassword || !nuevaPassword) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'idUsuario, oldPassword y nuevaPassword son obligatorios'
+      return res.status(400).json({ ok: false, mensaje: 'idUsuario, oldPassword y nuevaPassword son obligatorios' });
+    }
+
+    db.get('SELECT password FROM users WHERE id = ? LIMIT 1', [idUsuario], (err, user) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: 'Error servidor' });
+      if (!user) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' });
+      if (user.password !== oldPassword) return res.status(401).json({ ok: false, mensaje: 'Contraseña actual incorrecta' });
+
+      db.run('UPDATE users SET password = ? WHERE id = ?', [nuevaPassword, idUsuario], function (err) {
+        if (err) return res.status(500).json({ ok: false, mensaje: 'Error servidor' });
+        return res.status(200).json({ ok: true, mensaje: 'Contraseña cambiada' });
       });
-    }
-
-    const record = obtenerPorId(Number(idUsuario));
-    if (!record) {
-      return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado' });
-    }
-
-    if (record.password !== oldPassword) {
-      return res.status(401).json({ ok: false, mensaje: 'Contraseña actual incorrecta' });
-    }
-
-    actualizarPassword(record.idUsuario, nuevaPassword);
-
-    return res.status(200).json({ ok: true, mensaje: 'Contraseña cambiada' });
+    });
   }
 }

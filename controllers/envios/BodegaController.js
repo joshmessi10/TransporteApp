@@ -1,66 +1,84 @@
-// controllers/envios/BodegaController.js
-import {
-  crearBodega,
-  obtenerBodega,
-  ingresarEnvioABodega,
-  sacarEnvioDeBodega,
-  obtenerInventarioBodega,
-  obtenerEnvio
-} from './EnviosMemoryStore.js';
+import db from '../../config/db.js';
 
 export default class BodegaController {
-  static async crear(req, res) {
+  static crear(req, res) {
     const datos = req.body || {};
-    const bodega = crearBodega(datos);
-    return res.status(201).json({ ok: true, bodega });
+    db.run(
+      'INSERT INTO bodegas (id_sede, capacidad_max) VALUES (?, ?)',
+      [datos.id_sede || null, datos.capacidad_max || 0],
+      function (err) {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+        const id = this.lastID;
+        db.get('SELECT * FROM bodegas WHERE id = ?', [id], (err, bodega) => {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+          return res.status(201).json({ ok: true, bodega });
+        });
+      }
+    );
   }
 
-  static async obtener(req, res) {
+  static obtener(req, res) {
     const id = Number(req.params.id);
-    const bodega = obtenerBodega(id);
-    if (!bodega) {
-      return res.status(404).json({ ok: false, mensaje: 'Bodega no encontrada' });
-    }
-    return res.status(200).json({ ok: true, bodega });
-  }
-
-  static async ingresoEnvio(req, res) {
-    const idBodega = Number(req.params.id);
-    const { idEnvio } = req.body || {};
-
-    const envio = obtenerEnvio(Number(idEnvio));
-    if (!envio) {
-      return res.status(400).json({ ok: false, mensaje: 'Envio no existe' });
-    }
-
-    try {
-      const bodega = ingresarEnvioABodega(idBodega, envio.idEnvio);
-      return res.status(200).json({ ok: true, bodega, inventario: obtenerInventarioBodega(idBodega) });
-    } catch (e) {
-      return res.status(400).json({ ok: false, mensaje: e.message });
-    }
-  }
-
-  static async salidaEnvio(req, res) {
-    const idBodega = Number(req.params.id);
-    const { idEnvio } = req.body || {};
-
-    sacarEnvioDeBodega(idBodega, Number(idEnvio));
-
-    return res.status(200).json({
-      ok: true,
-      inventario: obtenerInventarioBodega(idBodega)
+    db.get('SELECT * FROM bodegas WHERE id = ?', [id], (err, bodega) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!bodega) return res.status(404).json({ ok: false, mensaje: 'Bodega no encontrada' });
+      return res.status(200).json({ ok: true, bodega });
     });
   }
 
-  static async inventario(req, res) {
+  static ingresoEnvio(req, res) {
     const idBodega = Number(req.params.id);
-    const bodega = obtenerBodega(idBodega);
-    if (!bodega) {
-      return res.status(404).json({ ok: false, mensaje: 'Bodega no encontrada' });
-    }
+    const { idEnvio } = req.body || {};
 
-    const inventario = obtenerInventarioBodega(idBodega);
-    return res.status(200).json({ ok: true, bodega, inventario });
+    db.get('SELECT * FROM envios WHERE id = ?', [Number(idEnvio)], (err, envio) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!envio) return res.status(400).json({ ok: false, mensaje: 'Envio no existe' });
+
+      db.run(
+        'INSERT INTO bodega_inventario (id_bodega, id_envio, estado) VALUES (?, ?, ?)',
+        [idBodega, idEnvio, 'ingreso'],
+        function (err) {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+          db.all('SELECT * FROM bodega_inventario WHERE id_bodega = ?', [idBodega], (err, inventario) => {
+            if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+            return res.status(200).json({ ok: true, inventario });
+          });
+        }
+      );
+    });
+  }
+
+  static salidaEnvio(req, res) {
+    const idBodega = Number(req.params.id);
+    const { idEnvio } = req.body || {};
+
+    db.run(
+      'INSERT INTO bodega_inventario (id_bodega, id_envio, estado) VALUES (?, ?, ?)',
+      [idBodega, Number(idEnvio), 'salida'],
+      function (err) {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+
+        db.all('SELECT * FROM bodega_inventario WHERE id_bodega = ?', [idBodega], (err, inventario) => {
+          if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+          return res.status(200).json({ ok: true, inventario });
+        });
+      }
+    );
+  }
+
+  static inventario(req, res) {
+    const idBodega = Number(req.params.id);
+
+    db.get('SELECT * FROM bodegas WHERE id = ?', [idBodega], (err, bodega) => {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (!bodega) return res.status(404).json({ ok: false, mensaje: 'Bodega no encontrada' });
+
+      db.all('SELECT * FROM bodega_inventario WHERE id_bodega = ?', [idBodega], (err, inventario) => {
+        if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+        return res.status(200).json({ ok: true, bodega, inventario });
+      });
+    });
   }
 }

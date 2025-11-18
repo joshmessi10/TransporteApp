@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cuenta - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border: 1px solid white;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .welcome-banner {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-banner h1 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-link-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .quick-link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .link-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .link-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .link-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .item-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-transit {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .item-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .item-details p {
+            margin: 0.3rem 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🚌 TransportePro</div>
+            <div class="user-info">
+                <span id="userName">Usuario</span>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-banner">
+            <h1>¡Bienvenido/a, <span id="welcomeName"></span>!</h1>
+            <p>Gestiona tus viajes, envíos y más desde tu cuenta personal</p>
+        </div>
+
+        <div class="quick-links">
+            <a href="/tiquetes" class="quick-link-card">
+                <div class="link-icon">🎫</div>
+                <div class="link-title">Comprar Tiquetes</div>
+                <div class="link-description">Encuentra y reserva tu próximo viaje</div>
+            </a>
+
+            <a href="/envios" class="quick-link-card">
+                <div class="link-icon">📦</div>
+                <div class="link-title">Enviar Paquete</div>
+                <div class="link-description">Crea un nuevo envío</div>
+            </a>
+
+            <a href="/tracking" class="quick-link-card">
+                <div class="link-icon">📍</div>
+                <div class="link-title">Rastrear Envío</div>
+                <div class="link-description">Consulta el estado de tus envíos</div>
+            </a>
+
+            <a href="/carrito" class="quick-link-card">
+                <div class="link-icon">🛒</div>
+                <div class="link-title">Mi Carrito</div>
+                <div class="link-description">Ver compras pendientes</div>
+            </a>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🎫 Mis Tiquetes Recientes</h2>
+            <div id="tiquetesContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">🎫</div>
+                    <h3>No tienes tiquetes</h3>
+                    <p>Comienza comprando tu primer viaje</p>
+                    <br>
+                    <a href="/tiquetes" class="btn">Comprar Tiquetes</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📦 Mis Envíos Recientes</h2>
+            <div id="enviosContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <h3>No tienes envíos</h3>
+                    <p>Crea tu primer envío de paquetes</p>
+                    <br>
+                    <a href="/envios" class="btn">Crear Envío</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📞 Mis PQRS</h2>
+            <div id="pqrsContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">📞</div>
+                    <h3>No tienes PQRS</h3>
+                    <p>¿Tienes alguna pregunta o sugerencia?</p>
+                    <br>
+                    <a href="/pqrs" class="btn">Crear PQRS</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+        
+        if (!usuario || usuario.rol !== 'cliente') {
+            window.location.href = '/login';
+        }
+        
+        document.getElementById('userName').textContent = usuario?.nombre || 'Usuario';
+        document.getElementById('welcomeName').textContent = usuario?.nombre?.split(' ')[0] || 'Usuario';
+        
+        // Cargar tiquetes
+        async function loadTiquetes() {
+            try {
+                const response = await fetch(`/api/tiquetes?idCliente=${usuario.id}`);
+                const data = await response.json();
+                
+                if (response.ok && data.tiquetes && data.tiquetes.length > 0) {
+                    const container = document.getElementById('tiquetesContainer');
+                    container.innerHTML = data.tiquetes.slice(0, 3).map(tiquete => `
+                        <div class="item-card">
+                            <div class="item-header">
+                                <div class="item-title">Tiquete #${tiquete.numero}</div>
+                                <span class="status-badge ${tiquete.usado ? 'status-pending' : 'status-active'}">
+                                    ${tiquete.usado ? 'Usado' : 'Vigente'}
+                                </span>
+                            </div>
+                            <div class="item-details">
+                                <p><strong>Ruta:</strong> ${tiquete.origen} → ${tiquete.destino}</p>
+                                <p><strong>Fecha:</strong> ${new Date(tiquete.fechaViaje).toLocaleDateString('es-CO')}</p>
+                                <p><strong>Asiento:</strong> ${tiquete.asiento}</p>
+                                <p><strong>Precio:</strong> $${tiquete.precio.toLocaleString('es-CO')}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando tiquetes:', error);
+            }
+        }
+        
+        // Cargar envíos
+        async function loadEnvios() {
+            try {
+                const response = await fetch(`/api/envios?idCliente=${usuario.id}`);
+                const data = await response.json();
+                
+                if (response.ok && data.envios && data.envios.length > 0) {
+                    const container = document.getElementById('enviosContainer');
+                    container.innerHTML = data.envios.slice(0, 3).map(envio => `
+                        <div class="item-card">
+                            <div class="item-header">
+                                <div class="item-title">Guía: ${envio.numeroGuia}</div>
+                                <span class="status-badge status-transit">
+                                    ${getEstadoLabel(envio.estado)}
+                                </span>
+                            </div>
+                            <div class="item-details">
+                                <p><strong>Destino:</strong> ${envio.destinatario.ciudad}</p>
+                                <p><strong>Destinatario:</strong> ${envio.destinatario.nombre}</p>
+                                <p><strong>Peso:</strong> ${envio.peso} kg</p>
+                                <p><strong>Tarifa:</strong> $${envio.tarifa.toLocaleString('es-CO')}</p>
+                            </div>
+                            <br>
+                            <a href="/tracking?guia=${envio.numeroGuia}" class="btn">Ver Seguimiento</a>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando envíos:', error);
+            }
+        }
+        
+        // Cargar PQRS
+        async function loadPQRS() {
+            try {
+                const response = await fetch(`/api/pqrs?idCliente=${usuario.id}`);
+                const data = await response.json();
+                
+                if (response.ok && data.pqrs && data.pqrs.length > 0) {
+                    const container = document.getElementById('pqrsContainer');
+                    container.innerHTML = data.pqrs.slice(0, 3).map(pqrs => `
+                        <div class="item-card">
+                            <div class="item-header">
+                                <div class="item-title">PQRS #${pqrs.numero}</div>
+                                <span class="status-badge ${pqrs.estado === 'CERRADA' ? 'status-pending' : 'status-active'}">
+                                    ${pqrs.estado}
+                                </span>
+                            </div>
+                            <div class="item-details">
+                                <p><strong>Tipo:</strong> ${pqrs.tipo}</p>
+                                <p><strong>Asunto:</strong> ${pqrs.asunto}</p>
+                                <p><strong>Fecha:</strong> ${new Date(pqrs.fecha).toLocaleDateString('es-CO')}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando PQRS:', error);
+            }
+        }
+        
+        function getEstadoLabel(estado) {
+            const labels = {
+                'REGISTRADO': 'Registrado',
+                'EN_BODEGA_ORIGEN': 'En Origen',
+                'EN_TRANSITO': 'En Tránsito',
+                'EN_BODEGA_DESTINO': 'En Destino',
+                'EN_REPARTO': 'En Reparto',
+                'ENTREGADO': 'Entregado'
+            };
+            return labels[estado] || estado;
+        }
+        
+        function logout() {
+            if (confirm('¿Estás seguro de cerrar sesión?')) {
+                localStorage.removeItem('usuario');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+        
+        // Cargar datos al iniciar
+        loadTiquetes();
+        loadEnvios();
+        loadPQRS();
+    </script>
+</body>
+</html>

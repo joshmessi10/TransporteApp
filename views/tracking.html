@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastrear Envío - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .search-section h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tracking-result {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .status-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-badge {
+            background: white;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .shipment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+        
+        .detail-card h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: #666;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+        
+        .timeline-item.active::before {
+            background: #2ecc71;
+            box-shadow: 0 0 0 2px #2ecc71;
+        }
+        
+        .timeline-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .timeline-status {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+        
+        .timeline-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">📍 TransportePro - Tracking</div>
+            <div>
+                <a href="/">Inicio</a> | 
+                <a href="/envios">Crear Envío</a> |
+                <a href="/login">Ingresar</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="search-section">
+            <h2>🔍 Rastrear tu Envío</h2>
+            <p style="color: #666; margin-bottom: 1rem;">Ingresa el número de guía de tu envío</p>
+            
+            <form class="search-form" id="trackingForm">
+                <input 
+                    type="text" 
+                    id="numeroGuia" 
+                    placeholder="Ejemplo: ENV-20250116-ABC123"
+                    required
+                >
+                <button type="submit" class="btn">Rastrear</button>
+            </form>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="tracking-result" id="trackingResult">
+            <div class="status-header">
+                <div class="status-info">
+                    <h3 id="guiaNumber"></h3>
+                    <p id="currentLocation"></p>
+                </div>
+                <div class="status-badge" id="statusBadge"></div>
+            </div>
+
+            <div class="shipment-details">
+                <div class="detail-card">
+                    <h4>📤 Origen</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">Remitente:</span>
+                        <span class="detail-value" id="remitente"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Ciudad:</span>
+                        <span class="detail-value" id="ciudadOrigen"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Dirección:</span>
+                        <span class="detail-value" id="direccionOrigen"></span>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <h4>📥 Destino</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">Destinatario:</span>
+                        <span class="detail-value" id="destinatario"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Ciudad:</span>
+                        <span class="detail-value" id="ciudadDestino"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Dirección:</span>
+                        <span class="detail-value" id="direccionDestino"></span>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <h4>📦 Detalles del Paquete</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">Peso:</span>
+                        <span class="detail-value" id="peso"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value" id="tipoContenido"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tarifa:</span>
+                        <span class="detail-value" id="tarifa"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <h3>📋 Historial de Seguimiento</h3>
+                <div id="timelineContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const trackingForm = document.getElementById('trackingForm');
+        const trackingResult = document.getElementById('trackingResult');
+        const alertContainer = document.getElementById('alertContainer');
+        
+        // Verificar si hay un número de guía en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const guiaFromUrl = urlParams.get('guia');
+        if (guiaFromUrl) {
+            document.getElementById('numeroGuia').value = guiaFromUrl;
+            trackEnvio(guiaFromUrl);
+        }
+        
+        function showAlert(message, type = 'error') {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+        
+        trackingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const numeroGuia = document.getElementById('numeroGuia').value.trim();
+            trackEnvio(numeroGuia);
+        });
+        
+        async function trackEnvio(numeroGuia) {
+            try {
+                const response = await fetch(`/api/tracking/${numeroGuia}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTrackingInfo(data);
+                } else {
+                    showAlert(data.error || 'No se encontró el envío');
+                    trackingResult.style.display = 'none';
+                }
+            } catch (error) {
+                showAlert('Error al consultar el envío');
+                trackingResult.style.display = 'none';
+            }
+        }
+        
+        function displayTrackingInfo(data) {
+            const { envio, tracking } = data;
+            
+            // Header
+            document.getElementById('guiaNumber').textContent = `Guía: ${envio.numeroGuia}`;
+            document.getElementById('currentLocation').textContent = envio.ubicacionActual || 'En tránsito';
+            document.getElementById('statusBadge').textContent = getStatusLabel(envio.estado);
+            
+            // Origen
+            document.getElementById('remitente').textContent = envio.remitente.nombre;
+            document.getElementById('ciudadOrigen').textContent = envio.remitente.ciudad;
+            document.getElementById('direccionOrigen').textContent = envio.remitente.direccion;
+            
+            // Destino
+            document.getElementById('destinatario').textContent = envio.destinatario.nombre;
+            document.getElementById('ciudadDestino').textContent = envio.destinatario.ciudad;
+            document.getElementById('direccionDestino').textContent = envio.destinatario.direccion;
+            
+            // Detalles
+            document.getElementById('peso').textContent = `${envio.peso} kg`;
+            document.getElementById('tipoContenido').textContent = envio.tipoContenido;
+            document.getElementById('tarifa').textContent = `$${envio.tarifa.toLocaleString('es-CO')}`;
+            
+            // Timeline
+            const timelineContainer = document.getElementById('timelineContainer');
+            timelineContainer.innerHTML = tracking.map((item, index) => `
+                <div class="timeline-item ${index === 0 ? 'active' : ''}">
+                    <div class="timeline-date">
+                        ${new Date(item.fecha).toLocaleString('es-CO')}
+                    </div>
+                    <div class="timeline-status">${getStatusLabel(item.estado)}</div>
+                    <div class="timeline-description">
+                        ${item.ubicacion || ''}
+                        ${item.observaciones ? ` - ${item.observaciones}` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            trackingResult.style.display = 'block';
+        }
+        
+        function getStatusLabel(estado) {
+            const labels = {
+                'REGISTRADO': '📝 Registrado',
+                'EN_BODEGA_ORIGEN': '🏢 En Bodega Origen',
+                'EN_TRANSITO': '🚚 En Tránsito',
+                'EN_BODEGA_DESTINO': '🏢 En Bodega Destino',
+                'EN_REPARTO': '🚴 En Reparto',
+                'ENTREGADO': '✅ Entregado',
+                'DEVUELTO': '↩️ Devuelto',
+                'FALLIDO': '❌ Entrega Fallida'
+            };
+            return labels[estado] || estado;
+        }
+    </script>
+</body>
+</html>

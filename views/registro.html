@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .registro-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 3rem;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .section-title {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin: 1.5rem 0 1rem 0;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, select {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .links {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+        
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="registro-container">
+        <div class="logo">
+            <div class="logo-icon">🚌</div>
+            <h2>TransportePro</h2>
+        </div>
+        
+        <h1>Crear Cuenta</h1>
+        
+        <div id="alert" class="alert"></div>
+        
+        <form id="registroForm">
+            <div class="section-title">📋 Información Personal</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre Completo <span class="required">*</span></label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Documento de Identidad <span class="required">*</span></label>
+                    <input type="text" id="documento" name="documento" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Documento <span class="required">*</span></label>
+                    <select id="tipoDocumento" name="tipoDocumento" required>
+                        <option value="CC">Cédula de Ciudadanía</option>
+                        <option value="CE">Cédula de Extranjería</option>
+                        <option value="TI">Tarjeta de Identidad</option>
+                        <option value="PP">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Nacimiento <span class="required">*</span></label>
+                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+                </div>
+            </div>
+
+            <div class="section-title">📞 Información de Contacto</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Correo Electrónico <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono <span class="required">*</span></label>
+                    <input type="tel" id="telefono" name="telefono" required>
+                </div>
+                <div class="form-group form-group-full">
+                    <label>Dirección</label>
+                    <input type="text" id="direccion" name="direccion">
+                </div>
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" id="ciudad" name="ciudad">
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <input type="text" id="pais" name="pais" value="Colombia">
+                </div>
+            </div>
+
+            <div class="section-title">🔒 Seguridad</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Contraseña <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required minlength="8">
+                    <small style="color: #666;">Mínimo 8 caracteres</small>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Contraseña <span class="required">*</span></label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Registrarse</button>
+        </form>
+        
+        <div class="links">
+            <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
+            <a href="/">← Volver al inicio</a>
+        </div>
+    </div>
+
+    <script>
+        const registroForm = document.getElementById('registroForm');
+        const alertDiv = document.getElementById('alert');
+        
+        // Establecer fecha máxima (18 años atrás)
+        const maxDate = new Date();
+        maxDate.setFullYear(maxDate.getFullYear() - 18);
+        document.getElementById('fechaNacimiento').max = maxDate.toISOString().split('T')[0];
+        
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        registroForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAlert('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            const clienteData = {
+                nombre: document.getElementById('nombre').value,
+                documento: document.getElementById('documento').value,
+                tipoDocumento: document.getElementById('tipoDocumento').value,
+                fechaNacimiento: document.getElementById('fechaNacimiento').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value,
+                direccion: document.getElementById('direccion').value,
+                ciudad: document.getElementById('ciudad').value,
+                pais: document.getElementById('pais').value,
+                password: password
+            };
+            
+            try {
+                const response = await fetch('/api/clientes/registro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(clienteData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Registro exitoso. Redirigiendo al login...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Error al registrarse', 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Intenta nuevamente.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

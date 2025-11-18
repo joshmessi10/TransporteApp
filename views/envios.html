@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Paquete - TransportePro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin: 1.5rem 0 1rem 0;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .price-estimate {
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0.5rem 0;
+        }
+        
+        .price-details {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">📦 TransportePro - Envíos</div>
+            <div>
+                <a href="/">Inicio</a> | 
+                <a href="/tracking">Rastrear</a> |
+                <a href="/login">Ingresar</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>📦 Crear Nuevo Envío</h2>
+            
+            <div id="alert" class="alert"></div>
+            
+            <form id="envioForm">
+                <div class="section-title">📍 Información de Origen</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombreRemitente">Nombre Remitente *</label>
+                        <input type="text" id="nombreRemitente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefonoRemitente">Teléfono *</label>
+                        <input type="tel" id="telefonoRemitente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ciudadOrigen">Ciudad Origen *</label>
+                        <select id="ciudadOrigen" required>
+                            <option value="">Selecciona</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="medellin">Medellín</option>
+                            <option value="cali">Cali</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="cartagena">Cartagena</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label for="direccionOrigen">Dirección Origen *</label>
+                        <input type="text" id="direccionOrigen" required>
+                    </div>
+                </div>
+
+                <div class="section-title">📍 Información de Destino</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombreDestinatario">Nombre Destinatario *</label>
+                        <input type="text" id="nombreDestinatario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefonoDestinatario">Teléfono *</label>
+                        <input type="tel" id="telefonoDestinatario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ciudadDestino">Ciudad Destino *</label>
+                        <select id="ciudadDestino" required>
+                            <option value="">Selecciona</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="medellin">Medellín</option>
+                            <option value="cali">Cali</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="cartagena">Cartagena</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label for="direccionDestino">Dirección Destino *</label>
+                        <input type="text" id="direccionDestino" required>
+                    </div>
+                </div>
+
+                <div class="section-title">📦 Detalles del Paquete</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="peso">Peso (kg) *</label>
+                        <input type="number" id="peso" min="0.1" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="largo">Largo (cm)</label>
+                        <input type="number" id="largo" min="1" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="ancho">Ancho (cm)</label>
+                        <input type="number" id="ancho" min="1" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="alto">Alto (cm)</label>
+                        <input type="number" id="alto" min="1" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoContenido">Tipo de Contenido *</label>
+                        <select id="tipoContenido" required>
+                            <option value="documentos">Documentos</option>
+                            <option value="ropa">Ropa</option>
+                            <option value="electronica">Electrónica</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="valorDeclarado">Valor Declarado (COP)</label>
+                        <input type="number" id="valorDeclarado" min="0" step="1000">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label for="descripcion">Descripción del Contenido</label>
+                        <textarea id="descripcion" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-title">🛡️ Opciones Adicionales</div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="seguro">
+                        <label for="seguro">Contratar seguro (3% del valor declarado)</label>
+                    </div>
+                </div>
+
+                <div class="price-estimate" id="priceEstimate" style="display: none;">
+                    <div>💰 Tarifa Estimada</div>
+                    <div class="price-amount" id="priceAmount">$0</div>
+                    <div class="price-details" id="priceDetails"></div>
+                </div>
+
+                <button type="button" class="btn" id="calculateBtn">Calcular Tarifa</button>
+                <button type="submit" class="btn" id="submitBtn" style="display: none;">Crear Envío</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('envioForm');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const priceEstimate = document.getElementById('priceEstimate');
+        const priceAmount = document.getElementById('priceAmount');
+        const priceDetails = document.getElementById('priceDetails');
+        const alertDiv = document.getElementById('alert');
+        
+        let tarifaCalculada = 0;
+        
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        calculateBtn.addEventListener('click', () => {
+            const peso = parseFloat(document.getElementById('peso').value) || 0;
+            const valorDeclarado = parseFloat(document.getElementById('valorDeclarado').value) || 0;
+            const seguro = document.getElementById('seguro').checked;
+            
+            if (peso <= 0) {
+                showAlert('Ingresa el peso del paquete', 'error');
+                return;
+            }
+            
+            // Cálculo simple de tarifa
+            let tarifa = peso * 5000; // $5000 por kg
+            tarifa += 10000; // Tarifa base
+            
+            let costoSeguro = 0;
+            if (seguro && valorDeclarado > 0) {
+                costoSeguro = valorDeclarado * 0.03;
+                tarifa += costoSeguro;
+            }
+            
+            tarifaCalculada = tarifa;
+            
+            priceAmount.textContent = `$${tarifa.toLocaleString('es-CO')}`;
+            priceDetails.innerHTML = `
+                Tarifa base + peso: $${(tarifa - costoSeguro).toLocaleString('es-CO')}<br>
+                ${seguro ? `Seguro: $${costoSeguro.toLocaleString('es-CO')}<br>` : ''}
+                <strong>Total: $${tarifa.toLocaleString('es-CO')} COP</strong>
+            `;
+            
+            priceEstimate.style.display = 'block';
+            submitBtn.style.display = 'block';
+        });
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (tarifaCalculada === 0) {
+                showAlert('Primero calcula la tarifa', 'error');
+                return;
+            }
+            
+            const envioData = {
+                remitente: {
+                    nombre: document.getElementById('nombreRemitente').value,
+                    telefono: document.getElementById('telefonoRemitente').value,
+                    ciudad: document.getElementById('ciudadOrigen').value,
+                    direccion: document.getElementById('direccionOrigen').value
+                },
+                destinatario: {
+                    nombre: document.getElementById('nombreDestinatario').value,
+                    telefono: document.getElementById('telefonoDestinatario').value,
+                    ciudad: document.getElementById('ciudadDestino').value,
+                    direccion: document.getElementById('direccionDestino').value
+                },
+                paquete: {
+                    peso: parseFloat(document.getElementById('peso').value),
+                    dimensiones: {
+                        largo: parseFloat(document.getElementById('largo').value) || 0,
+                        ancho: parseFloat(document.getElementById('ancho').value) || 0,
+                        alto: parseFloat(document.getElementById('alto').value) || 0
+                    },
+                    tipoContenido: document.getElementById('tipoContenido').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    valorDeclarado: parseFloat(document.getElementById('valorDeclarado').value) || 0
+                },
+                seguro: document.getElementById('seguro').checked,
+                tarifa: tarifaCalculada
+            };
+            
+            try {
+                const response = await fetch('/api/envios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(envioData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Envío creado exitosamente. Número de guía: ${data.envio.numeroGuia}`, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = `/tracking?guia=${data.envio.numeroGuia}`;
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Error al crear envío', 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
