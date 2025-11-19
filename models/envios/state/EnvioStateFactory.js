@@ -10,23 +10,39 @@ import EnvioFallidoState from './EnvioFallidoState.js';
 
 export default class EnvioStateFactory {
   create(estado) {
-    switch (estado) {
+    const normalized = (estado || '')
+      .toString()
+      .trim()
+      .toUpperCase()
+      .replace('-', '_'); // 'en-bodega' -> 'EN_BODEGA'
+
+    switch (normalized) {
       case 'REGISTRADO':
         return new EnvioRegistradoState();
+
       case 'EN_BODEGA_ORIGEN':
+      case 'EN_BODEGA': // compat DB
         return new EnvioEnBodegaOrigenState();
+
       case 'EN_TRANSITO':
+      case 'EN_RUTA': // compat DB
         return new EnvioEnTransitoState();
+
       case 'EN_BODEGA_DESTINO':
-        return new EnvioEnBodegaDestinoState();   // <-- FALTABA ESTE
+        return new EnvioEnBodegaDestinoState();
+
       case 'EN_REPARTO':
         return new EnvioEnRepartoState();
+
       case 'ENTREGADO':
         return new EnvioEntregadoState();
+
       case 'DEVUELTO':
         return new EnvioDevueltoState();
+
       case 'FALLIDO':
         return new EnvioFallidoState();
+
       default:
         throw new Error(`Estado de envío no soportado: ${estado}`);
     }

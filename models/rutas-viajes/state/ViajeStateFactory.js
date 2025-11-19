@@ -6,7 +6,13 @@ import ViajeCanceladoState from './ViajeCanceladoState.js';
 
 export default class ViajeStateFactory {
   create(estado) {
-    switch (estado) {
+    const normalized = (estado || '')
+      .toString()
+      .trim()
+      .toUpperCase()
+      .replace('-', '_'); // 'en-curso' -> 'EN_CURSO'
+
+    switch (normalized) {
       case 'PROGRAMADO':
         return new ViajeProgramadoState();
       case 'EN_CURSO':

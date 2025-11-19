@@ -34,6 +34,15 @@ export default class MantenimientoController {
     });
   }
 
+  static eliminar(req, res) {
+    const id = Number(req.params.id);
+    db.run('DELETE FROM mantenimientos WHERE id = ?', [id], function (err) {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (this.changes === 0) return res.status(404).json({ ok: false, mensaje: 'Mantenimiento no encontrado' });
+      return res.status(200).json({ ok: true });
+    });
+  }
+
   static iniciar(req, res) {
     const id = Number(req.params.id);
     const fechaInicio = new Date().toISOString().slice(0, 19).replace('T', ' ');

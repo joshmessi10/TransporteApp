@@ -77,6 +77,15 @@ export default class VehiculoController {
     });
   }
 
+  static eliminar(req, res) {
+    const id = Number(req.params.id);
+    db.run('DELETE FROM vehiculos WHERE id = ?', [id], function (err) {
+      if (err) return res.status(500).json({ ok: false, mensaje: err.message });
+      if (this.changes === 0) return res.status(404).json({ ok: false, mensaje: 'Vehiculo no encontrado' });
+      return res.status(200).json({ ok: true });
+    });
+  }
+
   static actualizarKilometraje(req, res) {
     const placa = req.params.placa;
     const { kilometraje } = req.body || {};

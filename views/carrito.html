@@ -555,12 +555,107 @@
                 showAlert('El carrito está vacío', 'error');
                 return;
             }
-            
-            if (confirm('¿Proceder con la compra?')) {
-                showAlert('Procesando compra... (Funcionalidad en desarrollo)', 'success');
-                // Aquí se implementaría la lógica de compra usando ProcesoCompraController
+
+            if (!confirm('¿Proceder con la compra?')) {
+                return;
+            }
+
+            try {
+                showAlert('Procesando compra...', 'info');
+
+                const resultadosTiquetes = [];
+                const resultadosEnvios   = [];
+
+                // ======================
+                // 1. Procesar TIQUETES
+                // ======================
+                for (const tiquete of carritoData.tiquetesDraft) {
+                    const body = {
+                        cliente: {
+                            idCliente: 1   // viene del localStorage
+                        },
+                        viaje: {
+                            // Para el backend SOLO importan estos campos:
+                            asiento: tiquete.asiento || null,
+                            precio:  tiquete.precio || 0
+                        },
+                        datosPago: {
+                            monto:  tiquete.precio || 0,
+                            metodo: 'efectivo'      // o 'tarjeta', lo que estés usando
+                        }
+                    };
+
+                    const resp = await fetch('/api/compras/ejecutar-tiquete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await resp.json();
+                    if (!resp.ok || !data.ok) {
+                        throw new Error(data.mensaje || 'Error al procesar compra de tiquete');
+                    }
+
+                    resultadosTiquetes.push(data);
+                }
+
+                // ======================
+                // 2. Procesar ENVIOS
+                // ======================
+                for (const envio of carritoData.enviosDraft) {
+                    const body = {
+                        cliente: {
+                            idCliente: usuario.id
+                        },
+                        envioDraft: {
+                            // Estos campos son los que valida ProcesoCompraController.ejecutarCompraEnvio
+                            origenSedeId:  envio.origenSedeId,
+                            destinoSedeId: envio.destinoSedeId,
+
+                            // Datos de negocio que ya tienes en el draft (ajusta nombres según tu estructura)
+                            origen:         envio.origen || null,
+                            destino:        envio.destinatario?.ciudad || null,
+                            pesoKg:         envio.pesoKg || 0,
+                            valorDeclarado: envio.valorDeclarado || 0
+                        },
+                        datosPago: {
+                            monto:  envio.precio || 0,
+                            metodo: 'efectivo'
+                        }
+                    };
+
+                    const resp = await fetch('/api/compras/ejecutar-envio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await resp.json();
+                    if (!resp.ok || !data.ok) {
+                        throw new Error(data.mensaje || 'Error al procesar compra de envío');
+                    }
+
+                    resultadosEnvios.push(data);
+                }
+
+                // Si llegó hasta aquí, todo se procesó OK
+                showAlert('Compra procesada exitosamente 🎉', 'success');
+
+                // Opcional: limpiar carrito en BD/localStorage
+                localStorage.removeItem('carritoId');
+                carritoId = null;
+                carritoData = { tiquetesDraft: [], enviosDraft: [] };
+                displayCarrito();
+
+                console.log('Tiquetes generados:', resultadosTiquetes);
+                console.log('Envios generados:', resultadosEnvios);
+
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message || 'Error al procesar la compra', 'error');
             }
         }
+
         
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');

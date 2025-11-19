@@ -1,5 +1,7 @@
 import db from '../../config/db.js';
 
+import { validarYCrearEnvio } from '../../models/envios/chain/EnvioValidationPipeline.js';
+
 export default class EnvioController {
    static registrarEnvio(req, res) {
     const body = req.body || {};

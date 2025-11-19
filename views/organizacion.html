@@ -43,7 +43,6 @@ input, select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
     <div class="tab active" data-tab="vehiculos">Vehículos</div>
     <div class="tab" data-tab="sedes">Sedes</div>
     <div class="tab" data-tab="conductores">Conductores</div>
-    <div class="tab" data-tab="mantenimientos">Mantenimientos</div>
 </div>
 
 <div class="tab-content active" id="vehiculos">
@@ -74,17 +73,6 @@ input, select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
         </thead>
         <tbody id="conductoresTable"></tbody>
     </table>
-</div>
-
-<div class="tab-content" id="mantenimientos">
-    <button class="btn" onclick="openModal('mantenimiento')">Agregar Mantenimiento</button>
-    <table>
-        <thead>
-            <tr><th>ID</th><th>ID Vehículo</th><th>Fecha</th><th>Detalle</th><th>Acciones</th></tr>
-        </thead>
-        <tbody id="mantenimientosTable"></tbody>
-    </table>
-</div>
 </div>
 
 <div class="modal" id="modal">
