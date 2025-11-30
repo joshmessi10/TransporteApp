@@ -3,17 +3,6 @@
 
 > Sistema de gestión de transporte construido en Node.js, con énfasis real en **patrones de comportamiento** aplicados a modelos de dominio y flujos de negocio (envíos, viajes, carrito y procesos de compra).
 
----
-
-## 🖼️ Preview
-
-> *(Espacio para imágenes o capturas del sistema)*  
-
-```md
-![Dashboard](./docs/screens/dashboard.png)
-![Viajes](./docs/screens/viajes.png)
-![Envíos](./docs/screens/envios.png)
-```
 
 ---
 
@@ -314,13 +303,14 @@ http://localhost:3000
 
 ## 📸 Galería / Screenshots
 
-> *(Espacio reservado para imágenes de UI o diagramas de arquitectura)*
-
-```md
-![Dashboard](./docs/screens/dashboard.png)
-![Gestión de Envíos](./docs/screens/envios.png)
-![Proceso de Compra](./docs/screens/checkout.png)
-```
+<img width="1798" height="871" alt="AdminTransporte" src="https://github.com/user-attachments/assets/d0e7df50-6aec-4f17-8ba2-70edc3297629" />
+<img width="1822" height="805" alt="GestionRutas" src="https://github.com/user-attachments/assets/d166188a-296d-45aa-9267-1a2855d25188" />
+<img width="1842" height="681" alt="RegistroVehiculos" src="https://github.com/user-attachments/assets/98abb3ac-db09-482c-a7f9-6dcedef8d01e" />
+<img width="1827" height="487" alt="EnviosRegistrados" src="https://github.com/user-attachments/assets/4ff9e716-ee86-4df1-bd4d-33387330aef6" />
+<img width="1557" height="642" alt="Cliente1" src="https://github.com/user-attachments/assets/7ab9ec17-1334-4530-9151-e527a11472b7" />
+<img width="1422" height="858" alt="Cliente2" src="https://github.com/user-attachments/assets/2cf3fe7c-13b1-4550-9b44-0d4e29560f42" />
+<img width="1532" height="520" alt="CompraTiquetes" src="https://github.com/user-attachments/assets/1cd5bfc2-d8e9-41af-884d-d4130a207d0e" />
+<img width="1552" height="846" alt="EnvioPaquetes" src="https://github.com/user-attachments/assets/e8df8812-4cbc-49f8-9fea-62b44b910afb" />
 
 ---
 
