@@ -1,168 +1,303 @@
 # 🚚 TransporteApp – Transport Management System  
 ### *Node.js · Express · MVC · Behavioral Design Patterns*
 
-> Sistema de gestión de transporte construido en Node.js, con énfasis en **patrones de comportamiento** aplicados a controladores, servicios y flujo de operaciones.
+> Sistema de gestión de transporte construido en Node.js, con énfasis real en **patrones de comportamiento** aplicados a modelos de dominio y flujos de negocio (envíos, viajes, carrito y procesos de compra).
 
 ---
 
 ## 🖼️ Preview
 
 > *(Espacio para imágenes o capturas del sistema)*  
-`![Screenshot 1](./docs/screens/screen1.png)`  
-`![Screenshot 2](./docs/screens/screen2.png)`
+
+```md
+![Dashboard](./docs/screens/dashboard.png)
+![Viajes](./docs/screens/viajes.png)
+![Envíos](./docs/screens/envios.png)
+```
 
 ---
 
-# 🎯 Overview
+## 🎯 Overview
 
-**TransporteApp** es una plataforma para gestionar unidades de transporte, rutas, conductores y operaciones.  
-La arquitectura aplica múltiples **patrones de comportamiento**, permitiendo desacoplar la lógica de negocio, mejorar la mantenibilidad y facilitar la extensión del sistema.
+**TransporteApp** es una plataforma didáctica para gestionar:
 
----
+- Envíos de paquetería  
+- Viajes de pasajeros  
+- Rutas, vehículos, sedes y conductores  
+- Compras de tiquetes y envíos  
+- Carrito de compra compartido
 
-# 🧱 Características Principales
+La gracia del proyecto no es solo la funcionalidad, sino **cómo está modelada la lógica** usando varios **patrones de diseño comportamentales** directamente en el código:
 
-- 🚌 Gestión de unidades (creación, edición, estado)  
-- 👨‍✈️ Administración de conductores  
-- 🗺️ Organización de rutas y asignaciones  
-- 🧾 Registro de viajes y operaciones  
-- 📡 API modular en Express  
-- 🗂️ Arquitectura MVC con separación clara: modelos, vistas y controladores  
-- 🧠 Integración de múltiples **patrones comportamentales**  
+- **State** para el ciclo de vida de envíos y viajes  
+- **Chain of Responsibility** para validar y calcular tarifas de envíos  
+- **Template Method** para el flujo completo de una compra  
+- **Memento** para snapshots del carrito de compra
 
----
-
-# 🧠 Patrones Comportamentales Implementados
-
-El diseño del backend incorpora varios patrones de comportamiento que controlan la interacción entre componentes, el flujo de operaciones y la respuesta a eventos.
+Todo esto sobre una arquitectura **Node.js + Express + MVC** con separación clara entre `models`, `controllers` y `views`.
 
 ---
 
-## 🔁 **1. Observer – Notificaciones internas del sistema**
+## 🧱 Características Principales
 
-Útil para reaccionar automáticamente a eventos como:
+- 🚌 Gestión de unidades, conductores y rutas  
+- 🎫 Reservas de tiquetes y registro de viajes  
+- 📦 Envíos con estados de ciclo de vida (registrado, en bodega, en tránsito, entregado, etc.)  
+- 🧾 Procesos de compra para tiquetes y envíos  
+- 🛒 Carrito de compra unificado para servicios de transporte  
+- 🗂️ Arquitectura modular: `config/`, `controllers/`, `models/`, `views/`  
+- 🧠 Aplicación explícita de patrones de comportamiento en la capa de dominio
 
-- creación de una ruta  
-- cambio de estado de una unidad  
-- asignación de conductor  
+---
+
+## 🧠 Patrones Comportamentales Implementados
+
+Aquí sí van los patrones que **realmente existen en el código** del proyecto.
+
+---
+
+### 1️⃣ State – Ciclo de vida de Envíos y Viajes
+
+**Ubicación en el código:**
+
+- `models/envios/state/*`  
+- `models/rutas-viajes/state/*`  
+
+En ambos casos hay una clase base abstracta:
 
 ```js
-class EventBus {
-  constructor() { this.subs = {}; }
-  on(event, handler) {
-    if (!this.subs[event]) this.subs[event] = [];
-    this.subs[event].push(handler);
-  }
-  emit(event, data) {
-    (this.subs[event] || []).forEach(h => h(data));
-  }
+// models/envios/state/EstadoEnvio.js
+export default class EstadoEnvio {
+  setContext(envio) { this.envio = envio; }
+
+  avanzar() { throw new Error('avanzar() debe implementarse en la subclase'); }
+  devolver() { throw new Error('devolver() debe implementarse en la subclase'); }
+  marcarFallido(motivo) { throw new Error('marcarFallido() debe implementarse en la subclase'); }
+
+  _appendObservacion(texto) { /* agrega texto a envio.observaciones */ }
 }
 ```
 
-**Casos de uso reales:**
-- Notificar a módulos de auditoría cuando se registra un viaje  
-- Actualizar disponibilidad cuando una unidad entra en mantenimiento  
+Cada subclase (`EnvioRegistradoState`, `EnvioEnTransitoState`, `EnvioEntregadoState`, etc.) implementa su propia lógica de transición.  
+El objeto `Envio` mantiene una referencia a su estado y delega en él qué se puede hacer.
 
----
-
-## 🧭 **2. Strategy – Elección de algoritmo para calcular rutas**
-
-Permite definir estrategias distintas:
-
-- rutas rápidas  
-- rutas económicas  
-- rutas por prioridad de carga  
+Además, existe una **fábrica de estados**:
 
 ```js
-class RutaContext {
-  setStrategy(strategy) { this.strategy = strategy; }
-  calcular(data) { return this.strategy.calcular(data); }
-}
-```
-
-**Ventajas:**
-- Cambiar o añadir algoritmos sin tocar código existente  
-- Perfecto para transporte y logística  
-
----
-
-## 🔄 **3. Chain of Responsibility – Validaciones encadenadas**
-
-Cuando se registra un viaje, se encadenan validaciones:
-
-```js
-class Handler {
-  setNext(h) { this.next = h; return h; }
-  handle(req) {
-    if (this.next) return this.next.handle(req);
-    return true;
-  }
-}
-```
-
-**Validaciones típicas:**
-- La unidad está disponible  
-- El conductor tiene licencia válida  
-- La ruta está activa  
-
----
-
-## 🧪 **4. Template Method – Flujo estándar de operaciones**
-
-Cada registro de viaje sigue una “plantilla”:
-
-```js
-class RegistroTemplate {
-  ejecutar(data) {
-    this.validar(data);
-    this.preparar(data);
-    this.guardar(data);
-    this.notificar(data);
+// models/envios/state/EnvioStateFactory.js
+export default class EnvioStateFactory {
+  create(estado) {
+    const normalized = (estado || '').toString().trim().toUpperCase();
+    switch (normalized) {
+      case 'REGISTRADO': return new EnvioRegistradoState();
+      case 'EN_BODEGA_ORIGEN': return new EnvioEnBodegaOrigenState();
+      // ...
+      case 'ENTREGADO': return new EnvioEntregadoState();
+      default: throw new Error(`Estado de envío no soportado: ${estado}`);
+    }
   }
 }
 ```
 
-Permite sobrescribir pasos según el tipo de operación.
+Lo mismo se replica para `Viaje` en `models/rutas-viajes/state/*` con `EstadoViaje` y `ViajeStateFactory`.
+
+**Idea:**  
+El comportamiento de un envío/viaje **cambia según su estado**, sin llenar de `if`/`switch` el modelo principal.
 
 ---
 
-## 🎛️ **5. Command – Acciones encapsuladas**
+### 2️⃣ Chain of Responsibility – Validación y tarificación de Envíos
 
-Acciones como:
+**Ubicación en el código:**
 
-- asignar conductor  
-- marcar unidad como inactiva  
-- programar mantenimiento  
+- `models/envios/chain/*`  
 
-Se encapsulan así:
+Hay una clase base:
 
 ```js
-class Command {
-  execute() {}
+// models/envios/chain/EnvioValidationHandler.js
+export default class EnvioValidationHandler {
+  constructor() { this.next = null; }
+
+  setNext(handler) {
+    this.next = handler;
+    return handler; // permite chain.setNext(a).setNext(b)...
+  }
+
+  handle(context) {
+    const seguir = this.doHandle(context);
+    if (seguir === false) return context;
+    if (this.next) return this.next.handle(context);
+    return context;
+  }
+
+  doHandle(context) {
+    throw new Error('doHandle() debe implementarse en el handler concreto');
+  }
 }
 ```
 
-**Ventaja:**  
-Permite *deshacer*, *repetir*, o *encolar* acciones en el futuro.
+Y varios handlers concretos:
+
+- `ValidarDatosBasicosHandler`  
+- `ValidarPesoYDimensionesHandler`  
+- `CalcularTarifaHandler`  
+
+Por ejemplo:
+
+```js
+// models/envios/chain/ValidarPesoYDimensionesHandler.js
+export default class ValidarPesoYDimensionesHandler extends EnvioValidationHandler {
+  doHandle({ dto, errores }) {
+    if (dto.pesoKg == null || dto.pesoKg <= 0) {
+      errores.push('El peso debe ser mayor a 0 kg');
+    }
+    // validación de alto/ancho/largo...
+    return errores.length === 0;
+  }
+}
+```
+
+La capa de aplicación puede montar:
+
+```js
+const chain = new ValidarDatosBasicosHandler();
+chain
+  .setNext(new ValidarPesoYDimensionesHandler())
+  .setNext(new CalcularTarifaHandler());
+
+const context = { dto, errores: [] };
+chain.handle(context);
+```
+
+**Idea:**  
+Cada paso decide si corta el flujo o lo deja continuar, permitiendo **agregar o reordenar reglas sin romper el resto**.
 
 ---
 
-# 📂 Estructura del Proyecto
+### 3️⃣ Template Method – Flujo completo de Proceso de Compra
 
+**Ubicación en el código:**
+
+- `models/procesos-compra/ProcesoCompra.js`  
+- `models/procesos-compra/ProcesoCompraEnvio.js`  
+- `models/procesos-compra/ProcesoCompraTiquete.js`  
+
+La clase base define el **esqueleto del algoritmo**:
+
+```js
+// models/procesos-compra/ProcesoCompra.js
+export default class ProcesoCompra {
+  async ejecutarCompra() {
+    await this.validarDatosEntrada();
+    await this.calcularPrecio();
+    await this.registrarTransaccion();
+    await this.procesarPago();
+    await this.generarDocumentoSoporte();
+    await this.notificarCliente();
+  }
+
+  async validarDatosEntrada() { throw new Error('...'); }
+  async calcularPrecio() { throw new Error('...'); }
+  async registrarTransaccion() { throw new Error('...'); }
+  async procesarPago() { throw new Error('...'); }
+  async generarDocumentoSoporte() { throw new Error('...'); }
+
+  // Hook
+  async notificarCliente() {
+    // implementación por defecto (no hace nada)
+  }
+}
 ```
+
+Las subclases especializan el flujo:
+
+- `ProcesoCompraEnvio`: crea `Envio`, `Pago`, `Factura`, `ItemFactura`, `Notificacion` de envío  
+- `ProcesoCompraTiquete`: crea `Tiquete`, `Pago`, `Factura`, `Notificacion` de tiquete  
+
+**Idea:**  
+El orden de pasos de la compra está fijo, pero **cada tipo de compra implementa su propia lógica interna**.
+
+---
+
+### 4️⃣ Memento – Snapshots del Carrito de Compra
+
+**Ubicación en el código:**
+
+- `models/carrito/CarritoMemento.js`  
+
+```js
+// models/carrito/CarritoMemento.js
+export default class CarritoMemento {
+  constructor(state) {
+    this.state = JSON.parse(JSON.stringify(state));
+    this.timestamp = new Date();
+  }
+
+  getState() {
+    return JSON.parse(JSON.stringify(this.state));
+  }
+
+  getName() {
+    const { tiquetesDraft, enviosDraft, descuentoGlobal } = this.state;
+    const tiq = tiquetesDraft ? tiquetesDraft.length : 0;
+    const env = enviosDraft ? enviosDraft.length : 0;
+    return `${this.timestamp.toISOString()} | T=${tiq}, E=${env}, desc=${descuentoGlobal}`;
+  }
+}
+```
+
+La idea es que un **Carrito** pueda:
+
+- crear mementos de su estado  
+- restaurar un estado anterior  
+- mostrar un historial legible de snapshots  
+
+Perfecto para *deshacer* cambios en procesos de compra más complejos.
+
+---
+
+## 📂 Estructura del Proyecto
+
+```text
 TransporteApp/
 │ server.js
 │ transporte.db
 │ package.json
 ├─ config/
+│   ├─ db.js
+│   ├─ schema.js
+│   └─ seed.js
 ├─ controllers/
+│   ├─ atencion-cliente/
+│   ├─ compras/
+│   ├─ envios/
+│   ├─ organizacion/
+│   ├─ pagos-facturacion/
+│   ├─ pasajeros/
+│   ├─ rutas-viajes/
+│   └─ usuarios/
 ├─ models/
+│   ├─ atencion-cliente/
+│   ├─ carrito/
+│   ├─ envios/
+│   ├─ envios/chain/
+│   ├─ envios/state/
+│   ├─ procesos-compra/
+│   ├─ rutas-viajes/
+│   ├─ rutas-viajes/state/
+│   └─ usuarios/
 ├─ views/
+│   ├─ index.html
+│   ├─ login.html
+│   ├─ cliente-dashboard.html
+│   ├─ admin-dashboard.html
+│   └─ ...
 ```
 
 ---
 
-# 🚀 Instalación y Uso
+## 🚀 Instalación y Uso
 
 ```bash
 npm install
@@ -171,31 +306,34 @@ npm start
 
 Servidor por defecto:
 
-```
+```text
 http://localhost:3000
 ```
 
 ---
 
-# 📸 Galería / Screenshots
+## 📸 Galería / Screenshots
 
-```
+> *(Espacio reservado para imágenes de UI o diagramas de arquitectura)*
+
+```md
 ![Dashboard](./docs/screens/dashboard.png)
-![Vehicles](./docs/screens/vehicles.png)
+![Gestión de Envíos](./docs/screens/envios.png)
+![Proceso de Compra](./docs/screens/checkout.png)
 ```
 
 ---
 
-# 🔮 Extensiones Futuras
+## 🔮 Extensiones Futuras
 
-- Sistema de roles (admin / operador)  
-- Módulo de mantenimiento avanzado  
-- Integración con mapas y cálculo real de rutas  
-- WebSockets para notificaciones en tiempo real  
-- Motor inteligente de asignación  
+- Autenticación con roles (admin / cliente) sobre la capa existente  
+- API REST pública a partir de los controladores actuales  
+- Integración con servicios externos (geocoding, mapas, pasarelas de pago)  
+- WebSockets para tracking en tiempo real de viajes y envíos  
+- Repositorios persistentes para notificaciones y mementos de carrito
 
 ---
 
-# 📄 Licencia
+## 📄 Licencia
 
 MIT – Libre para uso educativo o comercial.
